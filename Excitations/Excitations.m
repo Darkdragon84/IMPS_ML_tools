@@ -11,9 +11,9 @@ tol = 1e-10;
 InvETol = 1e-12;
 verbose = 0;
 
-kv = linspace(0,1,51);
+kv = linspace(0,1,21);
 % kv = 0;
-nbands = 4;
+nbands = 1;
 
 % savee = true;
 savee = false;
@@ -30,44 +30,43 @@ savex = false;
 % [SX,~,SZ] = su2gen(2);
 % OP = {2*SZ,2*SZ};
 
-% state = 'XXZ_D-4_m33_N2.mat';
+state = 'XXZ_D-4_m33_N2.mat';
 % state = 'XXZ_D-3_m50_N2.mat';
-% state = 'XXZ_Delta-3_h0_D33_N2.mat';
 % 
-% H = GetTwoSiteH([1,1,-3,0,0],2);
-% % topo = false;
-% topo = true;
-% SX = su2gen(2);
-% OP = {2*SX,2*SX};
+H = GetTwoSiteH([1,1,-4,0,0],2);
+% topo = false;
+topo = true;
+SX = su2gen(2);
+OP = {2*SX,2*SX};
 
 % state = 'XXZ_Delta-1_D50_N2.mat';
 % H = GetTwoSiteH([1,1,-1,0,0],2);
 % % topo = false;
 % topo = true;
 
-state = 'HUB_U5_D65_N2.mat';
-% state = 'HUB_U5_mu-2_m50_N2.mat';
-H = GetTwoSiteHamHUB(struct('t',1,'U',5));
-topo = true;
-% 
+% state = 'HUB_U5_D65_N2.mat';
+% % state = 'HUB_U5_mu-2_m50_N2.mat';
+% H = GetTwoSiteHamHUB(struct('t',1,'U',5));
+% topo = true;
+
 % %%% spin flip
 % % FS = [1,0,0,0;0,0,1,0;0,1,0,0;0,0,0,-1];
 % % OP={FS,FS};
 % 
 
-%%% charge flip
-O1 = [ 0, 0, 0, 1;
-       0, 1, 0, 0;
-       0, 0,-1, 0;
-       1, 0, 0, 0];
-
-O2 = [ 0, 0, 0,-1;
-       0, 1, 0, 0;
-       0, 0,-1, 0;
-      -1, 0, 0, 0];
-  
-OP = {O1,O2};
-comment = 'FC';
+% %%% charge flip
+% O1 = [ 0, 0, 0, 1;
+%        0, 1, 0, 0;
+%        0, 0,-1, 0;
+%        1, 0, 0, 0];
+% 
+% O2 = [ 0, 0, 0,-1;
+%        0, 1, 0, 0;
+%        0, 0,-1, 0;
+%       -1, 0, 0, 0];
+%   
+% OP = {O1,O2};
+% comment = 'FC';
 
 % %%% spin-charge flip (Shiba)
 % cup = [0,0,1,0;
@@ -87,6 +86,8 @@ FS = load([statefldr,'/',state]);
 AL = FS.AL;
 AR = FS.AR;
 C = FS.C;
+
+assert(iscell(AL{1}) && length(AL)>1,'ground state needs to be multi-site');
 
 errs = CheckOrthoLRSqrt(AL,AR,C,1);
 if any(errs>tol),warning('ground state gauge is worse than tol');end
@@ -175,13 +176,13 @@ HP = struct('I',I,'J',J,'Iv',Iv,'Jv',Jv,'V',HV);
 disp(['check R: ',num2str(norm(ApplyTransOp(AL,AL,R,'r')-R,'fro'),'%2.8e')]);
 disp(['check L: ',num2str(norm(ApplyTransOp(AR,AR,L,'l')-L,'fro'),'%2.8e')]);
 % [HLtot,HRtot] = fHeffConstants(AL,AR,L,R,H,max(tol/100,1e-14),[],true);
-[HLtot,HRtot] = fOeffConstants(AL,AR,L,R,H,2,max(tol/100,1e-14),[],true);
+[HLtot,HRtot] = fOpEffMultiConstants(AL,AR,L,R,H,2,max(tol/100,1e-14),[],true);
 
 Hs.H = H;
 Hs.HP = HP;
 Hs.HLtot = HLtot;
 Hs.HRtot = HRtot;
-pause;
+% pause;
 
 %%
 opts.isreal = false;
@@ -213,8 +214,8 @@ if savee || savex
 end
 
 % pause;
+X = cell(nbands,nk);
 if savex
-    X = cell(nbands,nk);
     save([savefldr,'/',basename,'_statebase.mat'],'AL','AR','C','NL');
 end
 
@@ -223,7 +224,7 @@ parfor nn=1:nk
     kfac = exp(1i*N*kv(nn)*pi);
     
 %     Hfun = @(x) fApplyHeffVec(x,kfac,AL,AR,C,NL,Hs,~topo,tol);
-    Hfun = @(x) fApplyHeffVec(x,kfac,AL,AR,LM,RM,NL,Hs,true,tol);
+    Hfun = @(x) fApplyHeffMultiVec(x,kfac,AL,AR,LM,RM,NL,Hs,true,tol);
 %     Hfun = @(x)(fApplyHeffVec_bk(x,exp(1i*N*kv(nn)*pi),AL,AR,C,NL,Hs,topo,tol));
     
 %     dE(:,nn) = eigs(Hfun,dim,nbands,'sr',opts);
