@@ -4,3 +4,7 @@ Matrix Product State algorithms for 1) ground states and 2) elementary excitatio
 1) Implementation of the ground state algorithm (VUMPS) presented in https://arxiv.org/abs/1701.07035. Available are single-site unit-cell and both sequential and parallel multi-site unit-cell implementations
 
 2) Implementation of the excitation algorithm (Excitations) presented in https://arxiv.org/abs/1103.2286. Available are single-site unit-cell and multi-site unit-cell implementations
+
+## Installation
+
+be sure to add the 'helpers' folder to your Path.
