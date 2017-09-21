@@ -2,3 +2,4 @@ chkp
 data
 logs
 states
+*.sh
