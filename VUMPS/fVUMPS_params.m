@@ -22,8 +22,7 @@ if paramout.N>1
     end
 end
 
-% if is_not_field_or_empty(paramout,'trueLR'),paramout.trueLR = false;end % calculate true L,R or use C'*C, C*C'
-paramout = set_default(paramout,'trueLR',false);
+paramout = set_default(paramout,'trueLR',false); % calculate true L,R or use C'*C, C*C'
 paramout = set_default(paramout,'verbose',true);
 paramout = set_default(paramout,'singlecomp',false);
 
@@ -34,17 +33,6 @@ paramout = set_default(paramout,'savestats',false);
 paramout = set_default(paramout,'datafldr','data');
 paramout = set_default(paramout,'statfilepath');
 paramout = set_default(paramout,'statstr');
-
-
-% if is_not_field_or_empty(paramout,'verbose'),paramout.verbose = true;end
-% if is_not_field_or_empty(paramout,'singlecomp'),paramout.singlecomp = false;end
-% if ~isfield(paramout,'obs'),paramout.obs = [];end
-% if ~isfield(paramout,'Eex'),paramout.Eex = [];end
-
-% if is_not_field_or_empty(paramout,'savestats'), paramout.savestats = false;end
-% if is_not_field_or_empty(paramout,'datafldr'), paramout.datafldr = 'data';end
-% if is_not_field_or_empty(paramout,'statfilepath'), paramout.statfilepath = [];end
-% if ~isfield(paramout,'statfilepath'), paramout.statfilepath=[];end
 
 if paramout.savestats
     if isempty(paramout.statfilepath) 
@@ -65,11 +53,6 @@ if paramout.savestats
     % if necessary, create datafolder
     if exist(paramout.datafldr,'dir')~=7,mkdir(paramout.datafldr);end 
 end
-
-
-% if ~isfield(paramout,'checkpoint') || isempty(paramout.checkpoint) ,paramout.checkpoint = false;end
-% if ~isfield(paramout,'chkpfldr') || isempty(paramout.chkpfldr),paramout.chkpfldr = 'chkp';end
-% if ~isfield(paramout,'chkpfilepath'), paramout.chkpfilepath = [];end
 
 paramout = set_default(paramout,'checkpoint',false);
 paramout = set_default(paramout,'chkpfldr','chkp');
@@ -99,9 +82,6 @@ end
 paramout = set_default(paramout,'savelamevo',false);
 paramout = set_default(paramout,'saveobsevo',false);
 
-% if is_not_field_or_empty(paramout,'savelamevo'),paramout.savelamevo = false;end
-% if is_not_field_or_empty(paramout,'saveobsevo'),paramout.saveobsevo = false;end
-
 paramout.savelamevo = paramout.savelamevo && paramout.savestats;
 paramout.saveobsevo = paramout.saveobsevo && paramout.savestats;
 paramout.haveobs = ~isempty(paramout.obs);
@@ -111,7 +91,6 @@ paramout.haveex = ~isempty(paramout.Eex);
 % paramout = set_default(paramout,'SVDthresh',1e-6);
 
 paramout = set_default(paramout,'thresh',1e-10);
-% if ~isfield(paramout,'thresh'),paramout.thresh = 1e-10;end
 paramout.frmt = sprintf('%%2.%ue',ceil(-log10(paramout.thresh)));
 
 
@@ -120,14 +99,7 @@ paramout = set_default(paramout,'invethresh',1e-14);
 paramout = set_default(paramout,'eigsthresh',1e-14);
 paramout = set_default(paramout,'lamthresh',1e-8);
 
-% if ~isfield(paramout,'expthresh'),paramout.expthresh = 1e-5;end
-% if ~isfield(paramout,'invethresh'),paramout.invethresh = 1e-14;end
-% if ~isfield(paramout,'eigsthresh'),paramout.eigsthresh = 1e-14;end
-% if ~isfield(paramout,'lamthresh'),paramout.lamthresh = 1e-8;end
-
-
 % # of correlation lengths to calculate
-% if ~isfield(paramout,'nxi'),paramout.nxi = 0;end
 paramout = set_default(paramout,'nxi',0);
 
 paramout = set_default(paramout,'plotex',false);
@@ -138,19 +110,6 @@ paramout = set_default(paramout,'plotvst',false);
 paramout = set_default(paramout,'plotxi',false);
 paramout.plotxi = paramout.plotxi && paramout.nxi > 0; % can only plot, if we actually calculate them
 
-% if ~isfield(paramout,'plotex'),paramout.plotex = false;end
-% if ~isfield(paramout,'plotnorm'),paramout.plotnorm = false;end
-% if ~isfield(paramout,'plotlam'),paramout.plotlam = false;end
-% if ~isfield(paramout,'plotdlam'),paramout.plotdlam = false;end
-% if ~isfield(paramout,'plotvst'),paramout.plotvst = false;end
-
-
-% # of correlation lengths to plot
-% if ~isfield(paramout,'plotxi'),paramout.plotxi = false;end
-% paramout.plotxi = paramout.plotxi && paramout.nxi > 0; % can only plot, if we actually calculate them
-
-
-
 paramout = set_default(paramout,'resume',false);
 paramout = set_default(paramout,'resumefilepath');
 
@@ -159,16 +118,6 @@ if paramout.resume && ~exist(paramout.resumefilepath,'file')
         paramout.resumefilepath = [];
         paramout.resume = false;
 end
-% paramout.resume = false;
-
-% if isfield(paramout,'resumefilepath')
-%     if exist(paramout.resumefilepath,'file')
-%         paramout.resume = true;
-%     else
-%         warning([paramout.resumefilepath,' does not exist, starting from scratch']);
-%         paramout.resumefilepath = [];
-%     end
-% end
 
 paramout = set_default(paramout,'A0');
 haveA0 = ~isempty(paramout.A0);
@@ -220,8 +169,6 @@ if haveA0 || paramout.resume % yes, initial state exists (we checked for the exi
         assert(~iscell(paramout.AR0{1}),'AR cannot contain cells');
         assert(length(paramout.AL0)==paramout.d,'AL0 has wrong physical dimension');
         assert(length(paramout.AR0)==paramout.d,'AR0 has wrong physical dimension');
-%         assert(iscell(paramout.AL0),'AL needs to be cell');
-%         assert(iscell(paramout.AR0),'AR needs to be cell');
         paramout.cmplx = ~(isreal(cell2mat(paramout.AL0)) && isreal(cell2mat(paramout.AR0)) && isreal(paramout.C0));
         paramout.m0 = size(paramout.C0,1);
         
@@ -240,7 +187,6 @@ else % create random initial state
         paramout.m0 = paramout.mv(1);
     end
     
-%     if ~isfield(paramout,'cmplx'),paramout.cmplx = false;end
     paramout = set_default(paramout,'cmplx',false);
     
     [paramout.AL0,paramout.AR0,paramout.C0] = randMPS_LR(paramout.d,paramout.m0,paramout.N,paramout.cmplx);
@@ -252,7 +198,6 @@ if paramout.N>1
     
     for nn=1:paramout.N
         paramout.Nm(nn) = length(paramout.mv{nn});
-        %                 reshape(paramout.mv{nn},[1,paramout.Nm(nn)]);
     end
 else
     paramout.Nm = length(paramout.mv);
@@ -262,6 +207,9 @@ end
 
 
 function strct = set_default(strct, name, value)
+    % set default value for field 'name' in struct 'strct' to 'value'
+    % do this only, if field does not exist or is empty
+    
     if nargin<3, value=[];end
     
     % if field does not exist at all, create it and set it to value
@@ -272,8 +220,4 @@ function strct = set_default(strct, name, value)
         % do nothing, if field exists and has non-empty value!
     end
 end
-
-% function y = is_not_field_or_empty(strct, name)
-%     y = ~isfield(strct,name) || isempty(strct.(name));
-% end
 
