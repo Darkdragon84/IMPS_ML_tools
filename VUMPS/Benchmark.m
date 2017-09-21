@@ -336,7 +336,7 @@ if N>1
 %     params.A0 = struct('AL',{AL0},'AR',{AR0},'C',{C0});
     
 %     [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,N,params);
-    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom(repmat({W},1,N),params);
+    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(repmat({W},1,N),params);
     
 else
     params.mv = mv;

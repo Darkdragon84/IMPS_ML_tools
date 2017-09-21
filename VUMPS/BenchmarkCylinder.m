@@ -52,9 +52,9 @@ plotex = false;
 % plotvst = true;
 plotvst = false;
 
-N = 6;
+N = 4;
 d = 2;
-mv = 250;
+mv = 50;
 Jx = 1;
 Jy = 1;
 Jz = -1;
@@ -148,7 +148,7 @@ if exist('nxi','var')==1,params.nxi=nxi;end
 %     params.A0 = struct('AL',{repmat({AL0},1,N)},'AR',{repmat({AR0},1,N)},'C',{repmat({C0},1,N)});
     params.A0 = struct('AL',{AL0},'AR',{AR0},'C',{C0});
     
-    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom(W,params);
+    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,params);
 %% post edits
 if plotex,lhex = get(ahex,'children');end
 if plotnorm,lhnrm = get(ahnrm,'children');end

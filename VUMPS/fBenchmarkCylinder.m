@@ -170,7 +170,7 @@ params.A0 = struct('AL',{AL0},'AR',{AR0},'C',{C0});
 
 
 % [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom([W,W],params);
-[AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom(W,params);
+[AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,params);
 if ~exist(statefldr,'dir'),mkdir(statefldr);end
 
 figfilepath = GetUniqueFilePath([fullfile(statefldr,name),'.mat']);
