@@ -5,14 +5,12 @@ d = W.d;
 
 paramin.d = d;
 paramin.N = 1;
-
+%% initialize parameters
 params = fVUMPS_params(paramin);
+verbose=params.verbose;
 
-verbose = params.verbose;
-
-trueLR = params.trueLR;
 tolmax = params.tolmax;
-tolmin = params.eigsthresh;
+tolmin=params.eigsthresh;
 mv = params.mv;
 Nm = params.Nm;
 
@@ -26,6 +24,7 @@ haveex = params.haveex;
 nxi = params.nxi;
 calcxi = nxi>0;
 plotxi = params.plotxi;
+trueLR = params.trueLR;
 
 thresh=params.thresh;
 expthresh=params.expthresh;
@@ -33,7 +32,8 @@ InvEthresh=params.invethresh;
 lamthresh=params.lamthresh;
 frmt=params.frmt;
 
-statfile=params.statfile;
+savestats=params.savestats;
+statfilepath=params.statfilepath;
 plotex=params.plotex;
 plotlam=params.plotlam;
 plotdlam=params.plotdlam;
@@ -41,12 +41,10 @@ plotnorm=params.plotnorm;
 plotvst=params.plotvst;
 
 chkp = params.checkpoint;
-% chkpfldr = params.chkpfldr;
-chkppath = params.chkppath;
+chkpfilepath = params.chkpfilepath;
 
-% resumefile = params.resumefile;
-% resume = params.resume;
-cmplx = params.cmplx;
+cmplx=params.cmplx;
+%% preparations
 
 m0 = params.m0;
 AL0 = params.AL0;
@@ -395,26 +393,26 @@ while run_VUMPS
     end
     
     % save stats
-    if ~isempty(statfile)
-        save(statfile,'tv','Fv','Ev''dlamv');
-        if haveex,save(statfile,'-append','dev');end
+    if savestats
+        save(statfilepath,'tv','Fv','Ev','dlamv');
+        if haveex,save(statfilepath,'-append','dev');end
         if savelamevo
             if length(lam)>size(lamarr,1)
                 lamarr = [[lamarr;nan(length(lam)-size(lamarr,1),size(lamarr,2))],lam];
             else
                 lamarr = [lamarr,lam];
             end
-            save(statfile,'-append','lamarr');
+            save(statfilepath,'-append','lamarr');
         end
         if saveobsevo
             obsarr = [obsarr;obs];
-            save(statfile,'-append','obsarr','obsop');
+            save(statfilepath,'-append','obsarr','obsop');
         end
     end
     
     % do checkpointing
     if chkp
-        save(chkppath,'AC','AL','AR','C','W');
+        save(chkpfilepath,'AC','AL','AR','C','W');
     end
     
     

@@ -4,199 +4,77 @@ function [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_parallel(W,N,params)
 
 d = W.d;
 % dw = W.dw;
-
-% PBC index function (wraps around, s.t. PBC(N+1) = 1 and PBC(0) = N)
+% PBC index function (wraps around, s.t. FP(N+1) = 1 and FP(0) = N)
 PBC = @(n)(mod(n+N-1,N)+1);
 
-% tol0 = 1e-15;
+paramin.d = d;
+paramin.N = N;
 
-% mmax = params.mmax;
+params = fVUMPS_params(paramin);
+
+verbose=params.verbose;
+
+tolmax = params.tolmax;
+tolmin = params.eigsthresh;
 mv = params.mv;
-Nm = zeros(1,N);
-if ~iscell(mv),
-    Nm = length(mv)*ones(N,1);
-    mv = repmat({mv},N,1);
-else
-    assert(length(mv)==N,'mv needs to be of length N');
-    for nn=1:N
-        Nm(nn) = length(mv{nn});
-        reshape(mv{nn},[1,Nm(nn)]);
-    end
-end
+Nm = params.Nm;
 
-% if length(mmax)==1,mmax=mmax*ones(N,1);end
-% assert(length(mmax)==N,'mmax needs to be of length N');
+singlecomp = params.singlecomp;
+savelamevo = params.savelamevo;
+saveobsevo = params.saveobsevo;
+obsop = params.obs;
+haveobs = params.haveobs;
+Eex = params.Eex;
+haveex = params.haveex;
+nxi = params.nxi;
+calcxi = nxi>0;
+plotxi = params.plotxi;
 
-if isfield(params,'singlecomp'),singlecomp=params.singlecomp;
-else singlecomp = false;
-end
+thresh = params.thresh;
+expthresh = params.expthresh;
+InvEthresh = params.invethresh;
+lamthresh = params.lamthresh;
+frmt = params.frmt;
 
-haveex = false;
-if isfield(params,'Eex') && ~isempty(params.Eex)
-    Eex=params.Eex;
-    haveex = true;
-end
+statfilepath = params.statfilepath;
+plotex = params.plotex;
+plotlam = params.plotlam;
+plotdlam = params.plotdlam;
+plotnorm = params.plotnorm;
+plotvst = params.plotvst;
 
-if isfield(params,'thresh'),thresh=params.thresh;
-else thresh = 1e-12;
-end
+chkp = params.checkpoint;
+% chkpfldr = params.chkpfldr;
+chkpfilepath = params.chkpfilepath;
 
-if isfield(params,'expthresh'),expthresh=params.expthresh;
-else expthresh = 1e-5;
-end
+% resumefile = params.resumefile;
+cmplx = params.cmplx;
 
-if isfield(params,'SVDthresh'),SVDthresh=params.SVDthresh;
-else SVDthresh = 1e-6;
-end
+m0 = params.m0;
+AL0 = params.AL0;
+AR0 = params.AR0;
+C0 = params.C0;
+lam0 = cellfun(@svd,C0,'uniformoutput',false);
 
-if isfield(params,'InvEthresh'),InvEthresh=params.InvEthresh;
-else InvEthresh = 1e-14;
-end
-
-if isfield(params,'Eigsthresh'),tolmin=params.Eigsthresh;
-else tolmin = 2*eps;
-end
-
-
-frmt = sprintf('%%2.%ue',ceil(-log10(thresh)));
-
-if isfield(params,'lamthresh'),lamthresh=params.lamthresh;
-else lamthresh = 1e-8;
-end
-
-% if isfield(params,'dm'),dmmax=params.dm;
-% else dmmax = 10;
-% end
-
-if isfield(params,'statfile'),statfile=params.statfile;
-else statfile = [];
-end
-
-if isfield(params,'plotex'),plotex=params.plotex;
-else plotex = false;
-end
-
-if isfield(params,'plotlam'),plotlam=params.plotlam;
-else plotlam = false;
-end
-
-if isfield(params,'plotdlam'),plotdlam=params.plotdlam;
-else plotdlam = false;
-end
-
-
-if isfield(params,'plotnorm'),plotnorm=params.plotnorm;
-else plotnorm = false;
-end
-
-if isfield(params,'plotvst'),plotvst=params.plotvst;
-else plotvst = false;
-end
-
-if isfield(params,'verbose'),verbose=params.verbose;
-else verbose=true;
-end
-
-if isfield(params,'checkpoint')
-    chkp=params.checkpoint;
-    if ~islogical(chkp)
-        warning('checkpoint is not a logical variable, setting true');
-        chkp = true;
-    end
-else chkp=false;
-end
-
-if isfield(params,'resume')
-    resumefile=params.resume;
-    if exist(resumefile,'file') ~= 2
-        warning([resumefile,' does not exist, starting from scratch']);
-        resumefile=[];
-    end
-else resumefile=[];
-end
-
-if isfield(params,'obs'),obsop=params.obs;
-else obsop=[];
-end
-
-if chkp
-    dchkp = 5;
-    chkpname = ['chkp_',datestr(now,'yymmdd_HHMMSS.FFF'),'.mat'];
-    %     c=1;
-    %     while exist(['chkp',num2str(c,'%03u'),'.mat'],'file') == 2,c = c+1;end
-    %     chkpname = ['chkp',num2str(c,'%03u'),'.mat'];
-end
-
-
-if isempty(resumefile)
-    if isfield(params,'A0')
-        AL0 = params.A0.AL;
-        AR0 = params.A0.AR;
-        C0 = params.A0.C;
-        N = length(AL0);
-        assert(iscell(AL0{1}),'AL0 needs to be a cell of cells');
-        assert(iscell(AR0{1}),'AR0 needs to be a cell of cells');
-        assert(length(AR0)==N,'AR0 has wrong unit cell size');
-        assert(length(C0)==N,'C0 has wrong unit cell size');
-        
-        assert(length(AL0{1})==d,'AL0 has wrong physical dimension');
-        assert(length(AR0{1})==d,'AR0 has wrong physical dimension');
-        
-        m0 = zeros(1,N);
-        lam0 = cell(1,N);
-        for nn=1:N
-            lam0{nn} = svd(C0{nn});
-            m0(nn) = size(AL0{nn}{1},1);
-            
-            if mv{nn}(1) ~= m0(nn)
-                mv{nn} = [m0,mv{nn}(mv{nn}>m0(nn))];
-            end
-            assert(size(AL0{PBC(nn-1)}{1},2)==m0(nn),['AL0{',int2str(PBC(nn-1)),'} and AL0{',int2str(nn),'} must have matching bond dimensions']);
-            assert(size(AR0{PBC(nn-1)}{1},2)==m0(nn),['AR0{',int2str(PBC(nn-1)),'} and AR0{',int2str(nn),'} must have matching bond dimensions']);
-        end
-        
-        CheckOrthoLRSqrt(AL0,AR0,C0,1);
-        cmplx = ~all(cellfun(@isreal,C0));
-        
-        
-    else
-        m0 = cellfun(@(x)(x(1)),mv);
-        
-        if isfield(params,'cmplx'),cmplx=params.cmplx;
-        else cmplx = false;
-        end
-        
-        [AL0,AR0,C0] = randMPS_LR(d,m0,N,cmplx);
-        lam0 = cellfun(@(x)(svd(x)),C0,'uniformoutput',false);
-        warning('fVUMPS_MPO_multi_parallel: creating random initial state');
-    end
-    m = m0;
-    AL = AL0;
-    AR = AR0;
-    C = C0;
-    lam = lam0;
-    
-else
-    F=load(resumefile);
-    AL=F.AL;
-    AR=F.AR;
-    C=F.C;
-    assert(length(AL)==N,'AL has wrong physical dimensions');
-    assert(length(AL{1})==d,'AL has wrong physical dimensions');
-    lam = cellfun(@svd,C,'uniformoutput',false);
-    m = zeros(1,N);
-    for nn=1:N
-        m(nn) = length(lam{nn});
-        if mv{nn}(1) ~= m(nn)
-            mv{nn} = [m,mv{nn}(mv{nn}>m(nn))];
-        end
-    end
-    disp([resumefile,' loaded']);
-end
+m = m0;
+AL = AL0;
+AR = AR0;
+C = C0;
+lam = lam0;
 
 AC=cell(1,N);
 for nn=1:N
     AC{nn} = cellfun(@(x)(x*C{nn}),AL{nn},'uniformoutput',false);
+end
+
+% precision of initial state (gauge condition)
+prec = ones(1,N);
+tol = ones(1,N);
+for nn=1:N
+    tmp = cell(d,1);
+    for kk=1:d,tmp{kk} = AL{nn}{kk}*C{nn} - C{PBC(nn-1)}*AR{nn}{kk};end
+    prec(nn) = max(max(abs(cell2mat(tmp))));
+    tol(nn) = min(max(prec(nn)/100,tolmin),tolmax);
 end
 
 %%

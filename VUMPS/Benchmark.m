@@ -19,11 +19,11 @@ lamthresh = 1e-10;
 % singlecomp = true;
 singlecomp = false;
 
-% chkp = true;
-chkp = false;
+chkp = true;
+% chkp = false;
 
-% savestats = true;
-savestats = false;
+savestats = true;
+% savestats = false;
 
 % savelamevo = true;
 savelamevo = false;
@@ -98,7 +98,7 @@ plotvst = false;
 % % mv = [33,43,55,70,88,110,137,169,207,253];
 % % mv = [33,55,88,137];
 % % mv = 137;
-% mv = 70;
+% mv = 20;
 % % mv = 1024;
 % H = GetTwoSiteH([sgn,sgn,-1,0,0],d); 
 % W = fSpinMPO(struct('Jx',sgn,'Jy',sgn,'Jz',-1),d);
@@ -112,26 +112,26 @@ plotvst = false;
 % ttl = '(d)';
 
 %%% S=1/2 anisotropic XXZ antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% N = 2;
-% d = 2;
-% sgn = 1;
-% % mv = 200;
-% % mv = [33,55,88,137,169,253];
-% % mv = 253;
-% % mv = [54,87,136];
-% mv = [33,54];
-% Delta = -3;
-% H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
-% W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta),d);
-% % W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
-% eex = fXXZGS_fixedh(Delta,0,1e-15);
-% if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-% else mstr = int2str(mv(end));
-% end
-% ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-% ttl = '(a)';
-% [X,~,Z] = su2gen(d);
-% obs = fMakeObs({'X','Z'},{X,Z});
+N = 2;
+d = 2;
+sgn = 1;
+% mv = 200;
+% mv = [33,55,88,137,169,253];
+% mv = 253;
+% mv = [54,87,136];
+mv = [33];
+Delta = -2;
+H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
+W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta),d);
+% W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
+eex = fXXZGS_fixedh(Delta,0,1e-15);
+if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+else mstr = int2str(mv(end));
+end
+ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+ttl = '(a)';
+[X,~,Z] = su2gen(d);
+obs = fMakeObs({'X','Z'},{X,Z});
 
 
 %%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,24 +207,24 @@ plotvst = false;
 % ttl = '(g)';
 
 %%% Bose Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N = 1;
-d = 7;
-mv = 50;
-t = 0.05;
-U = 1;
-mu = 0.5;
-BHparam = struct('t',t,'U',U,'mu',mu);
-[H,bop] = GetTwoSiteHamBH(d,BHparam);
-W = fBHubMPO(d,BHparam);
-nop = diag(0:d-1);
-nmax = zeros(d,d);
-nmax(end)=1;
-obs = fMakeObs({'n','nmax','b'},{nop,nmax,bop});
-if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-else mstr = int2str(mv(end));
-end
-ttm = ['Bose Hubbard, $U=',num2str(U),'$, $\mu=',num2str(mu),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-ttl = '(h)';
+% N = 1;
+% d = 7;
+% mv = 50;
+% t = 0.05;
+% U = 1;
+% mu = 0.5;
+% BHparam = struct('t',t,'U',U,'mu',mu);
+% [H,bop] = GetTwoSiteHamBH(d,BHparam);
+% W = fBHubMPO(d,BHparam);
+% nop = diag(0:d-1);
+% nmax = zeros(d,d);
+% nmax(end)=1;
+% obs = fMakeObs({'n','nmax','b'},{nop,nmax,bop});
+% if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+% else mstr = int2str(mv(end));
+% end
+% ttm = ['Bose Hubbard, $U=',num2str(U),'$, $\mu=',num2str(mu),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+% ttl = '(h)';
 
 %%% XXZ on Cylinder %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % N = 6;
@@ -315,9 +315,10 @@ params = struct('thresh',thresh,'expthresh',expthresh,'SVDthresh',SVDthresh,...
                 'plotlam',plotlam,'plotvst',plotvst,'plotex',plotex,'plotnorm',plotnorm,'plotdlam',plotdlam,'plotxi',plotxi,...
                 'mv',mv,'singlecomp',singlecomp,...
                 'checkpoint',chkp,'chkpfldr',chkpfldr,'chkpstr',name,...
+                'savestats',savestats,'datafldr',datafldr,'statstr',name,...
                 'savelamevo',savelamevo,'saveobsevo',saveobsevo);
 
-if savestats,params.statfile=[datafldr,'/',name,'_VUMPSstats.mat'];end
+% if savestats,params.statfile=[datafldr,'/',name,'_VUMPSstats.mat'];end
 if haveex,params.Eex=eex;end
 if plotex, params.ahex=ahex;end
 

@@ -10,11 +10,12 @@ end
 
 paramsin.N = N;
 paramsin.d = d;
-params = fVUMPS_params(paramsin);
 
 % PBC index function (wraps around, s.t. FP(N+1) = 1 and FP(0) = N)
 PBC = @(n)(mod(n+N-1,N)+1);
 
+%% initialize parameters
+params = fVUMPS_params(paramsin);
 verbose=params.verbose;
 
 tolmax = params.tolmax;
@@ -32,6 +33,7 @@ haveex = params.haveex;
 nxi = params.nxi;
 calcxi = nxi>0;
 plotxi = params.plotxi;
+trueLR = params.trueLR;
 
 thresh=params.thresh;
 expthresh=params.expthresh;
@@ -39,7 +41,8 @@ InvEthresh=params.invethresh;
 lamthresh=params.lamthresh;
 frmt=params.frmt;
 
-statfile=params.statfile;
+savestats=params.savestats;
+statfilepath=params.statfilepath;
 plotex=params.plotex;
 plotlam=params.plotlam;
 plotdlam=params.plotdlam;
@@ -47,12 +50,10 @@ plotnorm=params.plotnorm;
 plotvst=params.plotvst;
 
 chkp = params.checkpoint;
-% chkpfldr = params.chkpfldr;
-chkppath = params.chkppath;
+chkpfilepath = params.chkpfilepath;
 
-% resumefile = params.resumefile;
 cmplx=params.cmplx;
-
+%% preparations
 
 m0 = params.m0;
 AL0 = params.AL0;
@@ -80,7 +81,6 @@ AR = [AR(2:end),AR(1)];
 % dS = 1;
 % prec = 1e-2;
 
-%%
 
 if savelamevo
     lamarr=cell(1,N);
@@ -476,10 +476,9 @@ while run_vumps
     end
     
     % save stats
-    if ~isempty(statfile)
-        
-        save(statfile,'tv','Fv','Ev','dlamv');
-        if haveex,save(statfile,'-append','dev');end
+    if savestats
+        save(statfilepath,'tv','Fv','Ev','dlamv');
+        if haveex,save(statfilepath,'-append','dev');end
         if savelamevo
             for nn=1:N
                 if length(lam{nn})>size(lamarr{nn},1)
@@ -488,21 +487,21 @@ while run_vumps
                     lamarr{nn} = [lamarr{nn},lam{nn}];
                 end
             end
-            save(statfile,'-append','lamarr');
+            save(statfilepath,'-append','lamarr');
         end
         if saveobsevo
             for nn=1:N,obsarr{nn} = [obsarr{nn};obs(nn,:)];end
-            save(statfile,'-append','obsarr','obsop');
+            save(statfilepath,'-append','obsarr','obsop');
         end
-%         if haveex,save(statfile,'tv','Fv','dev','dlamv');
-%         else save(statfile,'tv','Fv','dlamv');
+%         if haveex,save(statfilepath,'tv','Fv','dev','dlamv');
+%         else save(statfilepath,'tv','Fv','dlamv');
 %         end
     end
     
     
     % checkpoint
     if chkp
-        save(chkppath,'AL','AR','AC','C','W');
+        save(chkpfilepath,'AL','AR','AC','C','W');
     end
     
 end

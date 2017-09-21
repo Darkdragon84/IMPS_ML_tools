@@ -54,7 +54,7 @@ plotvst = false;
 
 N = 6;
 d = 2;
-mv = 200;
+mv = 20;
 Jx = -1;
 Jy = -1;
 Jz = -1;
@@ -128,9 +128,10 @@ params = struct('thresh',thresh,'expthresh',expthresh,'SVDthresh',SVDthresh,...
                 'plotlam',plotlam,'plotvst',plotvst,'plotex',plotex,'plotnorm',plotnorm,'plotdlam',plotdlam,'plotxi',plotxi,...
                 'mv',mv,'singlecomp',singlecomp,...
                 'checkpoint',chkp,'chkpfldr',chkpfldr,'chkpstr',name,...
+                'savestats',savestats,'datafldr',datafldr,'statstr',name,...
                 'savelamevo',savelamevo,'saveobsevo',saveobsevo);
 
-if savestats,params.statfile=[datafldr,'/',name,'_VUMPSstats.mat'];end
+% if savestats,params.statfile=[datafldr,'/',name,'_VUMPSstats.mat'];end
 if haveex,params.Eex=eex;end
 if plotex, params.ahex=ahex;end
 
