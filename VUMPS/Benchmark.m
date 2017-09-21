@@ -112,49 +112,49 @@ plotvst = false;
 % ttl = '(d)';
 
 %%% S=1/2 anisotropic XXZ antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N = 2;
-d = 2;
-sgn = 1;
-% mv = 200;
-% mv = [33,55,88,137,169,253];
-% mv = 253;
-% mv = [54,87,136];
-mv = [33];
-Delta = -2;
-H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
-W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta),d);
-% W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
-eex = fXXZGS_fixedh(Delta,0,1e-15);
-if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-else mstr = int2str(mv(end));
-end
-ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-ttl = '(a)';
-[X,~,Z] = su2gen(d);
-obs = fMakeObs({'X','Z'},{X,Z});
-
-
-%%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % N = 2;
-% d = 4;
-% U = 10;
-% mu = [];
-% % mv = 69;
-% % mv = [10,15,20,25,30,35,40,45,50,55,60,65,69];
-% % mv = 126;
-% mv = [30,69];
-% % mv = [30,65,126];
-% H = GetTwoSiteHamHUB(struct('t',1,'U',U));
-% W = fHubMPO(struct('t',1,'U',U));
-% eex = fHUBGS_fixedmu(U,mu,1e-15);
-% 
+% d = 2;
+% sgn = 1;
+% % mv = 200;
+% % mv = [33,55,88,137,169,253];
+% % mv = 253;
+% % mv = [54,87,136];
+% mv = 33;
+% Delta = -2;
+% H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
+% W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta),d);
+% % W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
+% eex = fXXZGS_fixedh(Delta,0,1e-15);
 % if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
 % else mstr = int2str(mv(end));
 % end
-% ttm = ['Hubbard, $U=',num2str(U),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-% ttl = '(e)';
-% % obs = fMakeObs({'nup','ndown'},{diag([0,0,1,1]),diag([0,1,0,1])});
-% obs = fMakeObs({'n','Z'},{diag([0,1,1,2]),diag([0,-1,1,0])});
+% ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+% ttl = '(a)';
+% [X,~,Z] = su2gen(d);
+% obs = fMakeObs({'X','Z'},{X,Z});
+
+
+%%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+N = 2;
+d = 4;
+U = 10;
+mu = [];
+% mv = 69;
+% mv = [10,15,20,25,30,35,40,45,50,55,60,65,69];
+% mv = 126;
+mv = [30,69];
+% mv = [30,65,126];
+H = GetTwoSiteHamHUB(struct('t',1,'U',U));
+W = fHubMPO(struct('t',1,'U',U));
+eex = fHUBGS_fixedmu(U,mu,1e-15);
+
+if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+else mstr = int2str(mv(end));
+end
+ttm = ['Hubbard, $U=',num2str(U),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+ttl = '(e)';
+% obs = fMakeObs({'nup','ndown'},{diag([0,0,1,1]),diag([0,1,0,1])});
+obs = fMakeObs({'n','Z'},{diag([0,1,1,2]),diag([0,-1,1,0])});
 
 
 %%% Haldane-Shastry %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -313,7 +313,7 @@ end
 params = struct('thresh',thresh,'expthresh',expthresh,'SVDthresh',SVDthresh,...
                 'InvEthresh',InvEthresh,'lamthresh',lamthresh,'Eigsthresh',tol0,...
                 'plotlam',plotlam,'plotvst',plotvst,'plotex',plotex,'plotnorm',plotnorm,'plotdlam',plotdlam,'plotxi',plotxi,...
-                'mv',mv,'singlecomp',singlecomp,...
+                'mv',mv,'singlecomp',singlecomp,'trueLR',true,...
                 'checkpoint',chkp,'chkpfldr',chkpfldr,'chkpstr',name,...
                 'savestats',savestats,'datafldr',datafldr,'statstr',name,...
                 'savelamevo',savelamevo,'saveobsevo',saveobsevo);
@@ -335,7 +335,8 @@ if N>1
     params.A0 = struct('AL',{repmat({AL0},1,N)},'AR',{repmat({AR0},1,N)},'C',{repmat({C0},1,N)});
 %     params.A0 = struct('AL',{AL0},'AR',{AR0},'C',{C0});
     
-    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,N,params);
+%     [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,N,params);
+    [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom(repmat({W},1,N),params);
     
 else
     params.mv = mv;

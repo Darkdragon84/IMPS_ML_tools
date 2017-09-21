@@ -54,9 +54,9 @@ plotvst = false;
 
 N = 6;
 d = 2;
-mv = 20;
-Jx = -1;
-Jy = -1;
+mv = 250;
+Jx = 1;
+Jy = 1;
 Jz = -1;
 
 W = fCylinderSpinMPO(d,N,struct('Jx',Jx,'Jy',Jy,'Jz',Jz));
