@@ -132,7 +132,7 @@ if haveA0 || paramout.resume % yes, initial state exists (we checked for the exi
         paramout.AR0 = paramout.A0.AR;
         paramout.C0 = paramout.A0.C;
     else % or as resumefile
-        F = load(paramout.resumefile);
+        F = load(paramout.resumefilepath);
         paramout.AL0 = F.AL;
         paramout.AR0 = F.AR;
         paramout.C0 = F.C;
