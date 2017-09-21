@@ -6,6 +6,8 @@ paramout = paramin; % just copy over everything that already exists
 
 paramout.tolmax = 1e-6;
 
+timestamp = datestr(now,'yymmdd_HHMMSS.FFF');
+
 % for multi-site, we need a sequence of bond dimensions for every bond.
 % If only one given, replicate on all bonds.
 if paramout.N>1
@@ -20,94 +22,163 @@ if paramout.N>1
     end
 end
 
-if ~isfield(paramout,'trueLR'),paramout.trueLR = false;end % calculate true L,R or use C'*C, C*C'
+% if is_not_field_or_empty(paramout,'trueLR'),paramout.trueLR = false;end % calculate true L,R or use C'*C, C*C'
+paramout = set_default(paramout,'trueLR',false);
+paramout = set_default(paramout,'verbose',true);
+paramout = set_default(paramout,'singlecomp',false);
 
-if ~isfield(paramout,'verbose'),paramout.verbose = true;end
-if ~isfield(paramout,'singlecomp'),paramout.singlecomp = false;end
-if ~isfield(paramout,'obs'),paramout.obs = [];end
-if ~isfield(paramout,'Eex'),paramout.Eex = [];end
+paramout = set_default(paramout,'obs');
+paramout = set_default(paramout,'Eex');
 
-if ~isfield(paramout,'statfile'),paramout.statfile = [];end
-if ~isempty(paramout.statfile),paramout.statfile = GetUniqueFilePath(paramout.statfile);end
+paramout = set_default(paramout,'savestats',false);
+paramout = set_default(paramout,'datafldr','data');
+paramout = set_default(paramout,'statfilepath');
+paramout = set_default(paramout,'statstr');
 
-if ~isfield(paramout,'savelamevo'),paramout.savelamevo = false;end
-if ~isfield(paramout,'saveobsevo'),paramout.saveobsevo = false;end
 
-paramout.savelamevo = paramout.savelamevo && ~isempty(paramout.statfile);
-paramout.saveobsevo = paramout.saveobsevo && ~isempty(paramout.statfile);
+% if is_not_field_or_empty(paramout,'verbose'),paramout.verbose = true;end
+% if is_not_field_or_empty(paramout,'singlecomp'),paramout.singlecomp = false;end
+% if ~isfield(paramout,'obs'),paramout.obs = [];end
+% if ~isfield(paramout,'Eex'),paramout.Eex = [];end
+
+% if is_not_field_or_empty(paramout,'savestats'), paramout.savestats = false;end
+% if is_not_field_or_empty(paramout,'datafldr'), paramout.datafldr = 'data';end
+% if is_not_field_or_empty(paramout,'statfilepath'), paramout.statfilepath = [];end
+% if ~isfield(paramout,'statfilepath'), paramout.statfilepath=[];end
+
+if paramout.savestats
+    if isempty(paramout.statfilepath) 
+        % if file path empty, create standard one
+        % '<paramout.datafldr>/stats_VUMPS_<statstr>_<timestamptimestamp>.mat'
+        paramout.statfilepath = [paramout.datafldr,'/stats_VUMPS_'];
+        if ~isempty(paramout.statstr) % add statstr if present
+            paramout.statfilepath = [paramout.statfilepath,paramout.statstr,'_'];
+        end
+        paramout.statfilepath = [paramout.statfilepath,timestamp,'.mat'];
+    else
+        % we already have a full file name for the stats, just check if unique
+        % and set folder (check for existence below)
+        paramout.statfilepath = GetUniqueFilePath(paramout.statfilepath);
+        paramout.datafldr = fileparts(paramout.statfilepath);
+    end
+    
+    % if necessary, create datafolder
+    if exist(paramout.datafldr,'dir')~=7,mkdir(paramout.datafldr);end 
+end
+
+
+% if ~isfield(paramout,'checkpoint') || isempty(paramout.checkpoint) ,paramout.checkpoint = false;end
+% if ~isfield(paramout,'chkpfldr') || isempty(paramout.chkpfldr),paramout.chkpfldr = 'chkp';end
+% if ~isfield(paramout,'chkpfilepath'), paramout.chkpfilepath = [];end
+
+paramout = set_default(paramout,'checkpoint',false);
+paramout = set_default(paramout,'chkpfldr','chkp');
+paramout = set_default(paramout,'chkpfilepath');
+paramout = set_default(paramout,'chkpstr');
+
+if paramout.checkpoint
+    if isempty(paramout.chkpfilepath) 
+        % if file path empty, create standard one
+        % '<paramout.chkpfldr>/chkp_VUMPS_<chkpstr>_<timestamp>.mat'
+        paramout.chkpfilepath = [paramout.chkpfldr,'/chkp_VUMPS_'];
+        if ~isempty(paramout.chkpstr) % add chkpstr if present
+            paramout.chkpfilepath = [paramout.chkpfilepath,paramout.chkpstr,'_'];
+        end
+        paramout.chkpfilepath = [paramout.chkpfilepath,timestamp,'.mat'];
+    else
+        % we already have a full file name for the checkpoint file, just check if unique
+        % and set folder (check for existence below)
+        paramout.chkpfilepath = GetUniqueFilePath(paramout.chkpfilepath);
+        paramout.chkpfldr = fileparts(paramout.chkpfilepath);
+    end
+    
+    % if necessary, create chkpfldr
+    if ~exist(paramout.chkpfldr,'dir'),mkdir(paramout.chkpfldr);end 
+end
+
+paramout = set_default(paramout,'savelamevo',false);
+paramout = set_default(paramout,'saveobsevo',false);
+
+% if is_not_field_or_empty(paramout,'savelamevo'),paramout.savelamevo = false;end
+% if is_not_field_or_empty(paramout,'saveobsevo'),paramout.saveobsevo = false;end
+
+paramout.savelamevo = paramout.savelamevo && paramout.savestats;
+paramout.saveobsevo = paramout.saveobsevo && paramout.savestats;
 paramout.haveobs = ~isempty(paramout.obs);
 paramout.haveex = ~isempty(paramout.Eex);
 
-
 % we don't need this parameter anymore, switching to polar decomposition at all times
-% if isfield(paramin,'SVDthresh'),paramout.SVDthresh=paramin.SVDthresh;
-% else paramout.SVDthresh = 1e-6;
-% end
+% paramout = set_default(paramout,'SVDthresh',1e-6);
 
-if ~isfield(paramout,'thresh'),paramout.thresh = 1e-10;end
+paramout = set_default(paramout,'thresh',1e-10);
+% if ~isfield(paramout,'thresh'),paramout.thresh = 1e-10;end
 paramout.frmt = sprintf('%%2.%ue',ceil(-log10(paramout.thresh)));
 
-if ~isfield(paramout,'expthresh'),paramout.expthresh = 1e-5;end
-if ~isfield(paramout,'invethresh'),paramout.invethresh = 1e-14;end
-if ~isfield(paramout,'eigsthresh'),paramout.eigsthresh = 1e-14;end
-if ~isfield(paramout,'lamthresh'),paramout.lamthresh = 1e-8;end
 
-if ~isfield(paramout,'plotex'),paramout.plotex = false;end
-if ~isfield(paramout,'plotnorm'),paramout.plotnorm = false;end
-if ~isfield(paramout,'plotlam'),paramout.plotlam = false;end
-if ~isfield(paramout,'plotdlam'),paramout.plotdlam = false;end
-if ~isfield(paramout,'plotvst'),paramout.plotvst = false;end
+paramout = set_default(paramout,'expthresh',1e-5);
+paramout = set_default(paramout,'invethresh',1e-14);
+paramout = set_default(paramout,'eigsthresh',1e-14);
+paramout = set_default(paramout,'lamthresh',1e-8);
+
+% if ~isfield(paramout,'expthresh'),paramout.expthresh = 1e-5;end
+% if ~isfield(paramout,'invethresh'),paramout.invethresh = 1e-14;end
+% if ~isfield(paramout,'eigsthresh'),paramout.eigsthresh = 1e-14;end
+% if ~isfield(paramout,'lamthresh'),paramout.lamthresh = 1e-8;end
+
 
 % # of correlation lengths to calculate
-if ~isfield(paramout,'nxi'),paramout.nxi = 0;end
+% if ~isfield(paramout,'nxi'),paramout.nxi = 0;end
+paramout = set_default(paramout,'nxi',0);
 
-% # of correlation lengths to plot
-if ~isfield(paramout,'plotxi'),paramout.plotxi = false;end
+paramout = set_default(paramout,'plotex',false);
+paramout = set_default(paramout,'plotnorm',false);
+paramout = set_default(paramout,'plotlam',false);
+paramout = set_default(paramout,'plotdlam',false);
+paramout = set_default(paramout,'plotvst',false);
+paramout = set_default(paramout,'plotxi',false);
 paramout.plotxi = paramout.plotxi && paramout.nxi > 0; % can only plot, if we actually calculate them
 
+% if ~isfield(paramout,'plotex'),paramout.plotex = false;end
+% if ~isfield(paramout,'plotnorm'),paramout.plotnorm = false;end
+% if ~isfield(paramout,'plotlam'),paramout.plotlam = false;end
+% if ~isfield(paramout,'plotdlam'),paramout.plotdlam = false;end
+% if ~isfield(paramout,'plotvst'),paramout.plotvst = false;end
 
-if ~isfield(paramout,'checkpoint'),paramout.checkpoint = false;end
-if ~isfield(paramout,'chkpfldr'),paramout.chkpfldr = 'chkp';end
-if ~isfield(paramout,'chkppath'),paramout.chkppath = [];end
-if ~isempty(paramout.chkppath),paramout.chkppath = GetUniqueFilePath(paramout.chkppath);end
 
-if paramout.checkpoint
-    
-    if exist(paramout.chkpfldr,'dir')~=7,mkdir(paramout.chkpfldr);end
-    paramout.chkppath = [paramout.chkpfldr,'/chkp_VUMPS_'];
-    
-    if isfield(paramout,'chkpstr') % if there is a designated checkpoint file comment, add it to the standard above
-        paramout.chkppath = [paramout.chkppath,paramin.chkpstr,'_'];
-    end
-    
-    paramout.chkppath = [paramout.chkppath,datestr(now,'yymmdd_HHMMSS.FFF'),'.mat'];
+% # of correlation lengths to plot
+% if ~isfield(paramout,'plotxi'),paramout.plotxi = false;end
+% paramout.plotxi = paramout.plotxi && paramout.nxi > 0; % can only plot, if we actually calculate them
+
+
+
+paramout = set_default(paramout,'resume',false);
+paramout = set_default(paramout,'resumefilepath');
+
+if paramout.resume && ~exist(paramout.resumefilepath,'file')
+        warning([paramout.resumefilepath,' does not exist, starting from scratch']);
+        paramout.resumefilepath = [];
+        paramout.resume = false;
 end
+% paramout.resume = false;
 
-paramout.resume = false;
-if isfield(paramout,'resumefile')
-    if exist(paramout.resumefile,'file')
-        paramout.resume = true;
-    else
-        warning([paramout.resumefile,' does not exist, starting from scratch']);
-        paramout.resumefile = [];
-    end
-end
-
-% if isfield(paramout,'resume')
-%     if exist(paramout.resumefile,'file') ~= 2
-%         warning([paramout.resumefile,' does not exist, starting from scratch']);
-%         paramout.resumefile = [];
+% if isfield(paramout,'resumefilepath')
+%     if exist(paramout.resumefilepath,'file')
+%         paramout.resume = true;
+%     else
+%         warning([paramout.resumefilepath,' does not exist, starting from scratch']);
+%         paramout.resumefilepath = [];
 %     end
-% else paramout.resumefile = [];
 % end
 
+paramout = set_default(paramout,'A0');
+haveA0 = ~isempty(paramout.A0);
 
 % do we start from some initial state?
 % i.e., do we have a chkp file to resume from, or some explicit starting state A0?
 % if isfield(paramout,'A0') || ~isempty(paramout.resumefile) % yes, initial state exists
-if isfield(paramout,'A0') || paramout.resume % yes, initial state exists (we checked for the existence of resumefile earlier)
+if haveA0 || paramout.resume % yes, initial state exists (we checked for the existence of resumefile earlier)
     
-    if isfield(paramout,'A0') % either explicitly as A0 (this has priority)
+    if haveA0 % either explicitly as A0 (this has priority)
         paramout.AL0 = paramout.A0.AL;
         paramout.AR0 = paramout.A0.AR;
         paramout.C0 = paramout.A0.C;
@@ -169,10 +240,11 @@ else % create random initial state
         paramout.m0 = paramout.mv(1);
     end
     
-    if ~isfield(paramout,'cmplx'),paramout.cmplx = false;end
+%     if ~isfield(paramout,'cmplx'),paramout.cmplx = false;end
+    paramout = set_default(paramout,'cmplx',false);
     
     [paramout.AL0,paramout.AR0,paramout.C0] = randMPS_LR(paramout.d,paramout.m0,paramout.N,paramout.cmplx);
-    warning('fVUMPS_MPO: creating random initial state');
+    disp('creating random initial state');
 end
 
 if paramout.N>1
@@ -187,4 +259,21 @@ else
 end
 
 end
+
+
+function strct = set_default(strct, name, value)
+    if nargin<3, value=[];end
+    
+    % if field does not exist at all, create it and set it to value
+    if ~isfield(strct, name), strct.(name) = value;
+    else
+        % if field exists, but is empty, set to value
+        if isempty(strct.(name)), strct.(name) = value; end
+        % do nothing, if field exists and has non-empty value!
+    end
+end
+
+% function y = is_not_field_or_empty(strct, name)
+%     y = ~isfield(strct,name) || isempty(strct.(name));
+% end
 
