@@ -1,6 +1,6 @@
 function [filepath] = GetUniqueFilePath(filepath0)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%GetUniqueFilePath checks if file exists and appends a consecutive number
+%if necessary. It doesn't matter if the folder exists or not.
 
 [path,name0,ending] = fileparts(filepath0);
 
