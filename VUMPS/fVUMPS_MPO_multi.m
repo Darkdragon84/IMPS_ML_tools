@@ -1,4 +1,4 @@
-function [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom(W,paramsin)
+function [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,paramsin)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -72,15 +72,20 @@ for nn=1:N
     AC{nn} = cellfun(@(x)(x*C{nn}),AL{nn},'uniformoutput',false);
 end
 
+% precision of initial state (gauge condition)
+prec = ones(1,N);
+tol = ones(1,N);
+for nn=1:N
+    tmp = cell(d,1);
+    for kk=1:d,tmp{kk} = AL{nn}{kk}*C{nn} - C{PBC(nn-1)}*AR{nn}{kk};end
+    prec(nn) = max(max(abs(cell2mat(tmp))));
+    tol(nn) = min(max(prec(nn)/100,tolmin),tolmax);
+end
+
 % inital relative shift
 AR = [AR(2:end),AR(1)];
 
-% C = lam0;
-% Sold = cellfun(@(x)(-dot(diag(x),log2(diag(x)))),lam0,'uniformoutput',true);
-% disp(Sold);
-% dS = 1;
-% prec = 1e-2;
-
+%% initial preparations
 
 if savelamevo
     lamarr=cell(1,N);
@@ -102,14 +107,11 @@ XRtmp = cell(1,N);
 R = C{end}*C{end}';
 XLtrans = fMPO_TMeig(AL,WN{1},[],R,'l');
 XL = XLtrans;
-% XLtmp = fMPO_TMeig(AL,WN,[],R,'l');
-% XL = XLtmp;
 
 L = C{1}'*C{1};
 XR = fMPO_TMeig(AR,WN{2},L,[],'r');
 
 XL1 = ApplyMPOTM(AL{1},AL{1},W{1},XL,'l');
-% XR1 = ApplyMPOTM(AR{end},AR{end},W,XR,'r');
 
 Eold = EdensMPO(AL,WN{1},XL,R,'l')/N;
 
@@ -121,6 +123,8 @@ end
         
 XLtmp{1} = XL;
 XRtmp{1} = XR;
+F = zeros(1,N);
+
 for nn=1:N-1,XLtmp{nn+1} = ApplyMPOTM(AL{nn},AL{nn},W{nn},XLtmp{nn},'l');end
 for nn=N:-1:2,XRtmp{nn} = ApplyMPOTM(AR{nn},AR{nn},W{PBC(nn+1)},XRtmp{PBC(nn+1)},'r');end
 for nn=1:N,F(nn) = fGradNorm(AL{nn},C{nn},@(X)(fApplyHAMPO(X,XLtmp{nn},XRtmp{nn},W{nn})),'l');end
@@ -136,8 +140,6 @@ if calcxi,xiv = [];end;
 
 %% actual VUMPS iteration
 errs = ones(N,3);
-prec = ones(1,N);
-F = ones(1,N);
 dlam = zeros(1,N);
 
 tv = 0;
@@ -157,7 +159,6 @@ end
 XR0 = cell(1,N);
 
 run_vumps = true;
-dosvd = true;
 
 ttges = tic;
 while run_vumps
@@ -176,8 +177,8 @@ while run_vumps
 %         disp(nn)
 %         F(nn) = fGradNorm(AR{end},C{end}, @(X)(fApplyHAMPO(X,XL,XR,W)),'r');
 %         tol = min(max(F(nn)/100,tolmin),tolmax);
-        tol = min(max(prec(nn)/100,tolmin),tolmax);
-        opts.tol = tol;
+%         tol = min(max(prec(nn)/100,tolmin),tolmax);
+        opts.tol = tol(nn);
 %         tol = InvEthresh;
 %         pause;
         
@@ -201,17 +202,14 @@ while run_vumps
                 AR{end-1}{kk} = [AR{end-1}{kk},zeros(mltmp,dm)];
             end
             XL = ApplyMPOTM(ALnew,ALnew,W{end},XL,'l');
-%             XR1 = ApplyMPOTM(ARnew,ARnew,W,XR,'r');
         else
             exct(nn) = exct(nn) + 1;
             XL = XLtrans;
-%             XR1 = ApplyMPOTM(AR{end},AR{end},W,XR,'r');
         end
         
         tic;
         XR1 = ApplyMPOTM(AR{end},AR{end},W{1},XR,'r');
         tstep = tstep + toc;
-        
         
         XR0{nn} = XR;
         
@@ -227,16 +225,16 @@ while run_vumps
             for kk=1:d,AC{1}{kk} = C{end}*AR{end}{kk};end
         end
         
-        opts.v0 = reshape(cell2mat(AC{1}),d*ml*mr,1);% here AC0 helps!
+        opts.v0 = reshape(cell2mat(AC{1}),d*ml*mr,1);
         [ACv,~] = eigs(HAfun,d*ml*mr,1,mode,opts);
         AC{1} = mat2cell(reshape(ACv,d*ml,mr),ml*ones(d,1),mr);
         
-        opts.v0 = reshape(C{end},ml*ml,1); % here CL0 helps!
+        opts.v0 = reshape(C{end},ml*ml,1); 
         [CLv,~] = eigs(HCLfun,ml*ml,1,mode,opts);
         CLv = CLv/sign(CLv(1));
         CL = reshape(CLv,ml,ml);
         
-        opts.v0 = reshape(C{1},mr*mr,1); % here CR0 helps!
+        opts.v0 = reshape(C{1},mr*mr,1);
         [CRv,~] = eigs(HCRfun,mr*mr,1,mode,opts);
         CRv = CRv/sign(CRv(1));
         CR = reshape(CRv,mr,mr);
@@ -248,38 +246,30 @@ while run_vumps
         lamL = diag(lamL);
         lamR = diag(lamR);
         
-        if length(lamL)==length(lam{end})
+        if length(lamL) == length(lam{end})
             dlam(PBC(nn-1)) = max(abs(lamL-lam{end}));
-        else dlam(PBC(nn-1))=nan;
+        else dlam(PBC(nn-1)) = nan;
         end
-        if length(lamR)==length(lam{1})
+        if length(lamR) == length(lam{1})
             dlam(nn) = max(abs(lamR-lam{1}));
         else dlam(nn)=nan;
         end
-        
-%         if dosvd && min([lamL(end),lamR(end),F(nn)])<SVDTol, dosvd=false;disp('switching');end
-%         if dosvd && prec(nn)<SVDthresh
-            dosvd=false;
-%             disp('switching');
-%             pause;
-%         end
-%         dosvd=false; % it turns out that this is at least as stable as the usual SVD, but not susceptive to small Schmidt values
-        
+       
         tic;
-        if dosvd
-            [UL,~,VL] = svd(cell2mat(AC{1})*CR','econ');
-            AL{1} = mat2cell(UL*VL',ml*ones(d,1),mr);
-            
-            [UR,~,VR] = svd(CL'*cell2mat(AC{1}.'),'econ'); %% AC.' just reshapes the [2,1] cell into a [1,2] one
-            AR{end} = mat2cell(UR*VR',ml,mr*ones(1,d));
-        else
+%         if dosvd
+%             [UL,~,VL] = svd(cell2mat(AC{1})*CR','econ');
+%             AL{1} = mat2cell(UL*VL',ml*ones(d,1),mr);
+%             
+%             [UR,~,VR] = svd(CL'*cell2mat(AC{1}.'),'econ'); %% AC.' just reshapes the [2,1] cell into a [1,2] one
+%             AR{end} = mat2cell(UR*VR',ml,mr*ones(1,d));
+%         else
             % Matt's new scheme (polar decompositions)
             [UAL,~,VAL] = svd(cell2mat(AC{1}),'econ');
             [UAR,~,VAR] = svd(cell2mat(AC{1}.'),'econ');
             
             AL{1} = mat2cell(UAL*VAL'*VCR*UCR',ml*ones(d,1),mr);
             AR{end} = mat2cell(VCL*UCL'*UAR*VAR',ml,mr*ones(1,d));
-        end
+%         end
         tstep = tstep + toc;
         
         C{1} = CR;
@@ -295,15 +285,17 @@ while run_vumps
         tmp = cell(d,1);
         for kk=1:d,tmp{kk} = AL{1}{kk}*C{1} - C{end}*AR{end}{kk};end
         errs(nn,3) = max(max(abs(cell2mat(tmp))));
-        prec(nn) = max(errs(nn,:));
         
+        prec(nn) = errs(nn,3);
+        tol(nn) = min(max(prec(nn)/100,tolmin),tolmax);
         
-%         disp('XL');
-%         tic;
-%         fMPO_TMeig(AL,WN,[],C{end}*C{end}','l',InvEthresh,max(InvEthresh,tol),[],false); % here XL0 helps
-%         toc;
+        if trueLR, R = fMPSTMeig(AL,'r',0,C{end}*C{end}',[],'lr');
+        else R = C{end}*C{end}';
+        end
+        
         tic;
-        XL = fMPO_TMeig(AL,WN{1},[],C{end}*C{end}','l',InvEthresh,max(InvEthresh,tol/100),XL,false); % here XL0 helps
+%         XL = fMPO_TMeig(AL,WN{1},[],R,'l',InvEthresh,max(InvEthresh,tol/100),XL,false); % here XL0 helps
+        XL = fMPO_TMeig(AL,WN{1},[],R,'l',InvEthresh,max(InvEthresh,tol(PBC(nn+1))/10),XL,false); % here XL0 helps
 %         toc;
         tstep = tstep + toc;
         
@@ -327,19 +319,14 @@ while run_vumps
         XL1 = ApplyMPOTM(AL{1},AL{1},W{1},XLtrans,'l');
         tstep = tstep + toc;
         
-%         disp('XR');
-%         tic;
-%         fMPO_TMeig(AR,WN,C{1}'*C{1},[],'r',InvEthresh,max(InvEthresh,tol),[],false); 
-%         toc;
+        if trueLR, L = fMPSTMeig(AR,'l',0,C{1}'*C{1},[],'lr');
+        else L = C{1}'*C{1};
+        end
+        
         tic;
-        XR = fMPO_TMeig(AR,WN{2},C{1}'*C{1},[],'r',InvEthresh,max(InvEthresh,tol/100),XR0{PBC(nn+1)},false);
+        XR = fMPO_TMeig(AR,WN{2},L,[],'r',InvEthresh,max(InvEthresh,tol(PBC(nn+1))/10),XR0{PBC(nn+1)},false);
 %         toc;
         tstep = tstep + toc;
-       
-        
-%         expandnow = [exct(nn) > dexct, F(nn)< expthresh, mr < mmax(nn), lamR(end) > lamthresh];
-
-        
     end
     
     ttot = ttot + tstep;
@@ -366,8 +353,9 @@ while run_vumps
     tv = [tv;ttot];
     
     % in order to get truly variational energies, calculate exact left dominant TM eigenvector
-    Lex = fMPSTMeig(AR,'l',0,C{1}'*C{1});
-    E = EdensMPO(AR,WN{2},XR,Lex,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
+%     Lex = fMPSTMeig(AR,'l',0,C{1}'*C{1});
+%     E = EdensMPO(AR,WN{2},XR,Lex,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
+    E = EdensMPO(AR,WN{2},XR,L,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
     dE = E - Eold;
     Eold = E;
     Ev = [Ev;E];
