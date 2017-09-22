@@ -11,7 +11,7 @@ if nargin<5 || isempty(NS),NS = GetNullSpace(A,dir,[],0);end
 
 d = length(A);
 AC = cell(d,1);
-%% verions one
+
 if strcmp(dir,'l')
     for kk=1:d,AC{kk}=A{kk}*C;end
 elseif strcmp(dir,'r')
@@ -22,22 +22,6 @@ end
 dAC = fHAC(AC);
 x = ApplyTransOp(dAC,NS,[],dir);
 
-F = max(abs(x(:))); % infinity norm, does not scale with the number of elements
-% F = norm(x,'fro')/sqrt(numel(x)); % to correct for the scaling of norm(x) with sqrt(N) for a random x, where N is the # of elements.
-%% version two
-% Atmp = cell(d,1);
-% 
-% dC = ApplyTransOp(dAC,A,[],dir);
-% if strcmp(dir,'l')
-%     for kk=1:d,Atmp{kk} = dAC{kk} - A{kk}*dC;end
-% elseif strcmp(dir,'r')
-%     for kk=1:d,Atmp{kk} = dAC{kk} - dC*A{kk};end
-% else error('wrong direction specified');
-% end
-% 
-% Ftmp = norm(cell2mat(Atmp),'fro');
-% % Ftmp = max(max(abs(cell2mat(Atmp))));
-% 
-% 
-% disp([F,Ftmp,abs(F-Ftmp)])
+% F = max(abs(x(:))); % infinity norm, does not scale with the number of elements
+F = norm(x,'fro')/sqrt(numel(x)); % to correct for the scaling of norm(x) with sqrt(N) for a random x, where N is the # of elements.
 end
