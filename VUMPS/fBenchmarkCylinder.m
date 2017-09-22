@@ -209,7 +209,7 @@ end
 %% text
 if plotnorm
     tht = text(2,1,ttm,'interpreter','latex','fontsize',20,'parent',ahnrm);
-    thl = text(2,1,ttl,'fontsize',18,'parent',ahnrm);
+%     thl = text(2,1,ttl,'fontsize',18,'parent',ahnrm);
     if plotex
         cte = 1;
         while ~strcmp(get(lhex(cte),'type'),'line'),cte=cte+1;end
