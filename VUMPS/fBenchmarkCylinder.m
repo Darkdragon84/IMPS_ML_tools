@@ -67,10 +67,10 @@ obs = fMakeObs({'X','Z'},{X,Z});
 
 %% misc preps
 if iscell(mv)
-    m0 = cell2mat(cellfun(@(x) x(1),mv,'uniformoutput',false));
+    m0 = cell2mat(cellfun(@(x) x(1),mv,'uniformoutput',false))
     mend = cell2mat(cellfun(@(x) x(end),mv,'uniformoutput',false));
 else
-    m0 = mv(1);
+    m0 = mv(1)
     mend = mv(end);
 end
 

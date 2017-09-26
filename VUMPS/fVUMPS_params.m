@@ -16,7 +16,7 @@ if paramout.N>1
     
     if ~iscell(paramout.mv),
         paramout.Nm = length(paramout.mv)*ones(paramout.N,1);
-        paramout.mv = repmat({paramout.mv},paramout.N,1);
+        paramout.mv = repmat({paramout.mv},1,paramout.N);
     else
         assert(length(paramout.mv)==paramout.N,'mv needs to be of length N');
     end

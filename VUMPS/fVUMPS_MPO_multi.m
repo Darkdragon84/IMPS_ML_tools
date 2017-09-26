@@ -15,7 +15,8 @@ paramsin.d = d;
 PBC = @(n)(mod(n+N-1,N)+1);
 
 %% initialize parameters
-params = fVUMPS_params(paramsin);
+params = fVUMPS_params(paramsin)
+pause
 verbose=params.verbose;
 
 tolmax = params.tolmax;
@@ -481,15 +482,14 @@ while run_vumps
             for nn=1:N,obsarr{nn} = [obsarr{nn};obs(nn,:)];end
             save(statfilepath,'-append','obsarr','obsop');
         end
-%         if haveex,save(statfilepath,'tv','Fv','dev','dlamv');
-%         else save(statfilepath,'tv','Fv','dlamv');
-%         end
+        if verbose,disp(['stats saved under ',statfilepath]);end
     end
     
     
     % checkpoint
     if chkp
         save(chkpfilepath,'AL','AR','AC','C','W');
+        if verbose,disp(['checkpoint saved under ',chkpfilepath]);end
     end
     
 end
