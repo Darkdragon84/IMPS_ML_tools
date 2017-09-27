@@ -152,15 +152,18 @@ if haveA0 || paramout.resume % yes, initial state exists (we checked for the exi
         paramout.m0 = zeros(1,paramout.N);
         
         for nn=1:paramout.N
-            paramout.m0(nn) = size(paramout.AL0{nn}{1},1);
+            paramout.m0(nn) = size(paramout.C0{nn},1);
             
             % if bond dimension of initial state is different from mv{nn}(1), adapt mv{nn} accodringly
             if paramout.mv{nn}(1) ~= paramout.m0(nn)
                 paramout.mv{nn} = [paramout.m0(nn),paramout.mv{nn}(paramout.mv{nn}>paramout.m0(nn))];
             end
 %             paramout.mv{nn}
-            assert(size(paramout.AL0{PBC(nn-1)}{1},2)==paramout.m0(nn),['AL0{',int2str(PBC(nn-1)),'} and AL0{',int2str(nn),'} must have matching bond dimensions']);
-            assert(size(paramout.AR0{PBC(nn-1)}{1},2)==paramout.m0(nn),['AR0{',int2str(PBC(nn-1)),'} and AR0{',int2str(nn),'} must have matching bond dimensions']);
+            assert(size(paramout.AL0{nn}{1},2)==paramout.m0(nn),['AL0{',int2str(nn),'} and C0{',int2str(nn),'} must have matching bond dimensions']);
+            assert(size(paramout.AR0{nn}{1},2)==paramout.m0(nn),['AR0{',int2str(nn),'} and C0{',int2str(nn),'} must have matching bond dimensions']);
+            
+            assert(size(paramout.AL0{PBC(nn+1)}{1},1)==paramout.m0(nn),['AL0{',int2str(PBC(nn+1)),'} and C0{',int2str(nn),'} must have matching bond dimensions']);
+            assert(size(paramout.AR0{PBC(nn+1)}{1},1)==paramout.m0(nn),['AR0{',int2str(PBC(nn+1)),'} and C0{',int2str(nn),'} must have matching bond dimensions']);
         end
         
         paramout.cmplx = ~all(cellfun(@isreal,paramout.C0));

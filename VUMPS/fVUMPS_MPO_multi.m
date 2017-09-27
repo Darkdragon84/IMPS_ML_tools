@@ -15,8 +15,7 @@ paramsin.d = d;
 PBC = @(n)(mod(n+N-1,N)+1);
 
 %% initialize parameters
-params = fVUMPS_params(paramsin)
-pause
+params = fVUMPS_params(paramsin);
 verbose=params.verbose;
 
 tolmax = params.tolmax;
@@ -36,24 +35,24 @@ calcxi = nxi>0;
 plotxi = params.plotxi;
 trueLR = params.trueLR;
 
-thresh=params.thresh;
-expthresh=params.expthresh;
-InvEthresh=params.invethresh;
-lamthresh=params.lamthresh;
-frmt=params.frmt;
+thresh = params.thresh;
+expthresh = params.expthresh;
+InvEthresh = params.invethresh;
+lamthresh = params.lamthresh;
+frmt = params.frmt;
 
-savestats=params.savestats;
-statfilepath=params.statfilepath;
-plotex=params.plotex;
-plotlam=params.plotlam;
-plotdlam=params.plotdlam;
-plotnorm=params.plotnorm;
-plotvst=params.plotvst;
+savestats = params.savestats;
+statfilepath = params.statfilepath;
+plotex = params.plotex;
+plotlam = params.plotlam;
+plotdlam = params.plotdlam;
+plotnorm = params.plotnorm;
+plotvst = params.plotvst;
 
 chkp = params.checkpoint;
 chkpfilepath = params.chkpfilepath;
 
-cmplx=params.cmplx;
+cmplx = params.cmplx;
 %% preparations
 
 m0 = params.m0;
@@ -184,13 +183,13 @@ while run_vumps
 %         pause;
         
 %         XL0{nn} = XL;
-        expandnow = [exct(nn) > dexct, prec_exp < expthresh, mct(nn) < Nm(nn), lam{end}(end) > lamthresh];
+        expandnow = [exct(nn) > dexct, prec_exp < expthresh, mct(PBC(nn-1)) < Nm(PBC(nn-1)), lam{end}(end) > lamthresh];
         
         if all(expandnow) % we assume that there will not be a bond dimension increase in the very first iteration (thus first XL is already for site 1, and not N)
             exct(nn) = 0;
-            mct(nn) = mct(nn) + 1;
+            mct(PBC(nn-1)) = mct(PBC(nn-1)) + 1;
             
-            mnew = mv{nn}(mct(nn));
+            mnew = mv{PBC(nn-1)}(mct(PBC(nn-1)));
             [dm,ALnew,Cnew,ARnew] = fExpandMPO({W{end},W{1}},XL,XR,AL{end},AR{end},C{end},mnew-mr);
             
             if dm ~= mnew-mr,warning(['new bond dimension is m(',int2str(nn),'=',int2str(mr+dm)]);end
@@ -257,20 +256,13 @@ while run_vumps
         end
        
         tic;
-%         if dosvd
-%             [UL,~,VL] = svd(cell2mat(AC{1})*CR','econ');
-%             AL{1} = mat2cell(UL*VL',ml*ones(d,1),mr);
-%             
-%             [UR,~,VR] = svd(CL'*cell2mat(AC{1}.'),'econ'); %% AC.' just reshapes the [2,1] cell into a [1,2] one
-%             AR{end} = mat2cell(UR*VR',ml,mr*ones(1,d));
-%         else
-            % Matt's new scheme (polar decompositions)
-            [UAL,~,VAL] = svd(cell2mat(AC{1}),'econ');
-            [UAR,~,VAR] = svd(cell2mat(AC{1}.'),'econ');
-            
-            AL{1} = mat2cell(UAL*VAL'*VCR*UCR',ml*ones(d,1),mr);
-            AR{end} = mat2cell(VCL*UCL'*UAR*VAR',ml,mr*ones(1,d));
-%         end
+        
+        % always use polar decompositions (most stable)
+        [UAL,~,VAL] = svd(cell2mat(AC{1}),'econ');
+        [UAR,~,VAR] = svd(cell2mat(AC{1}.'),'econ');
+        
+        AL{1} = mat2cell(UAL*VAL'*VCR*UCR',ml*ones(d,1),mr);
+        AR{end} = mat2cell(VCL*UCL'*UAR*VAR',ml,mr*ones(1,d));
         tstep = tstep + toc;
         
         C{1} = CR;
@@ -488,8 +480,10 @@ while run_vumps
     
     % checkpoint
     if chkp
+        AR = [AR(end),AR(1:end-1)];
         save(chkpfilepath,'AL','AR','AC','C','W');
         if verbose,disp(['checkpoint saved under ',chkpfilepath]);end
+        AR = [AR(2:end),AR(1)];
     end
     
 end

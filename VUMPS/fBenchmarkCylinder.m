@@ -35,11 +35,11 @@ saveobsevo = true;
 % save_plots = true;
 save_plots = false;
 
-plotlam = true;
-% plotlam = false;
+% plotlam = true;
+plotlam = false;
 
-plotnorm = true;
-% plotnorm = false;
+% plotnorm = true;
+plotnorm = false;
 
 % plotdlam = true;
 plotdlam = false;
@@ -47,8 +47,8 @@ plotdlam = false;
 % plotxi = true;
 plotxi = false;
 
-plotex = true;
-% plotex = false;
+% plotex = true;
+plotex = false;
 
 % plotvst = true;
 plotvst = false;
@@ -67,10 +67,10 @@ obs = fMakeObs({'X','Z'},{X,Z});
 
 %% misc preps
 if iscell(mv)
-    m0 = cell2mat(cellfun(@(x) x(1),mv,'uniformoutput',false))
+    m0 = cell2mat(cellfun(@(x) x(1),mv,'uniformoutput',false));
     mend = cell2mat(cellfun(@(x) x(end),mv,'uniformoutput',false));
 else
-    m0 = mv(1)
+    m0 = mv(1);
     mend = mv(end);
 end
 
@@ -171,12 +171,7 @@ else
     params.resumefilepath = startingstate;
 end
 %% actual VUMPS simulations
-% if N>1
-params.mv = mv;
-%     params.A0 = struct('AL',{repmat({AL0},1,N)},'AR',{repmat({AR0},1,N)},'C',{repmat({C0},1,N)});
 
-
-% [AL,AR,AC,C,stats] = fVUMPS_MPO_multi_inhom([W,W],params);
 [AL,AR,AC,C,stats] = fVUMPS_MPO_multi(W,params);
 
 if ~exist(statefldr,'dir'),mkdir(statefldr);end
