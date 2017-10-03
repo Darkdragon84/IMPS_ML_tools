@@ -97,22 +97,10 @@ O{off+2} =  t*cdo *F;
 O{off+3} = -t*cup'*F;
 O{off+4} =  t*cup *F;
 
-% O{2} = F*cdo;
-% O{3} = F*cdo';
-% O{4} = F*cup;
-% O{5} = F*cup';
-% 
-% O{off+1} = t*cdo';
-% O{off+2} = -t*cdo;
-% O{off+3} = t*cup';
-% O{off+4} = -t*cup;
-
 if havev
     V = params.V;
-%     O{6} = n-id;
-%     O{11+haveonsite} = V*(n-id);
-    O{6} = n;
-    O{11+haveonsite} = V*n;
+    O{6} = n-id;
+    O{11+haveonsite} = V*(n-id);
 end
 
 W.d = d;
