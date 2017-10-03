@@ -19,11 +19,11 @@ lamthresh = 1e-10;
 % singlecomp = true;
 singlecomp = false;
 
-chkp = true;
-% chkp = false;
+% chkp = true;
+chkp = false;
 
-savestats = true;
-% savestats = false;
+% savestats = true;
+savestats = false;
 
 % savelamevo = true;
 savelamevo = false;
@@ -137,16 +137,18 @@ plotvst = false;
 %%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N = 2;
 d = 4;
+t = 1;
 U = 10;
+V = 8;
 mu = [];
 % mv = 69;
 % mv = [10,15,20,25,30,35,40,45,50,55,60,65,69];
 % mv = 126;
 mv = [30,69];
 % mv = [30,65,126];
-H = GetTwoSiteHamHUB(struct('t',1,'U',U));
-W = fHubMPO(struct('t',1,'U',U));
-eex = fHUBGS_fixedmu(U,mu,1e-15);
+% H = GetTwoSiteHamHUB(struct('t',1,'U',U));
+W = fHubMPO(struct('t',1,'U',U,'V',V,'mu',mu));
+% eex = fHUBGS_fixedmu(U,mu,1e-15);
 
 if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
 else mstr = int2str(mv(end));

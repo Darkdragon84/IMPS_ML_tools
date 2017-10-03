@@ -30,14 +30,20 @@ savex = false;
 % [SX,~,SZ] = su2gen(2);
 % OP = {2*SZ,2*SZ};
 
-state = 'XXZ_D-4_m33_N2.mat';
-% state = 'XXZ_D-3_m50_N2.mat';
-% 
-H = GetTwoSiteH([1,1,-4,0,0],2);
-% topo = false;
-topo = true;
-SX = su2gen(2);
-OP = {2*SX,2*SX};
+% state = 'XXZ_D-4_m33_N2.mat';
+% % state = 'XXZ_D-3_m50_N2.mat';
+% % 
+% H = GetTwoSiteH([1,1,-4,0,0],2);
+% % topo = false;
+% topo = true;
+% SX = su2gen(2);
+% OP = {2*SX,2*SX};
+
+state = 'Hubbard_U10_V8_D30_69_N2.mat';
+H = GetTwoSiteHamHUB(struct('t',1,'U',10,'V',8));
+topo = false;
+
+% OP = 1;
 
 % state = 'XXZ_Delta-1_D50_N2.mat';
 % H = GetTwoSiteH([1,1,-1,0,0],2);
@@ -103,8 +109,12 @@ FP = @(n)(mod(n+N-1,N)+1);
 R = C{end}*C{end}';
 
 if topo % topo nontrivial
-    for nn=1:N
-        AR{nn} = ApplyOperator(AR{nn},OP{nn});
+    if isscalar(OP)
+        AR = circshift(AR,[OP,0]);
+    else
+        for nn=1:N
+            AR{nn} = ApplyOperator(AR{nn},OP{nn});
+        end
     end
     L = C{end}'*C{end};
 %     AR = [AR(end),AR(1:end-1)];
@@ -182,7 +192,7 @@ Hs.H = H;
 Hs.HP = HP;
 Hs.HLtot = HLtot;
 Hs.HRtot = HRtot;
-% pause;
+pause;
 
 %%
 opts.isreal = false;
