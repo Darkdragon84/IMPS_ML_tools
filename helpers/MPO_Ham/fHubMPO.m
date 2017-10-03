@@ -86,7 +86,7 @@ else
     J = [ones(1,dw-1),2:dw];
 end
 
-off = 5 + haveonsite + 2*havev;
+off = 5 + haveonsite + havev;
 O{2} = cdo;
 O{3} = cdo';
 O{4} = cup;
@@ -109,8 +109,10 @@ O{off+4} =  t*cup *F;
 
 if havev
     V = params.V;
-    O{6} = n-id;
-    O{6+haveonsite+1} = V*(n-id);
+%     O{6} = n-id;
+%     O{11+haveonsite} = V*(n-id);
+    O{6} = n;
+    O{11+haveonsite} = V*n;
 end
 
 W.d = d;
