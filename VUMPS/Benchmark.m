@@ -57,9 +57,10 @@ plotvst = false;
 % d = 2;
 % nxi = 2;
 % % mv = [9,18,32,50];
-% mv = [10,19,33,55];
-% % mv = 55;
-% hz = 0.45;
+% % mv = [10,19,33,55];
+% % mv = [10,19,33];
+% mv = 14;
+% hz = 0.3;
 % H = GetTwoSiteH([1,0,0,0,hz],d);
 % W = fSpinMPO(struct('Jx',1,'hz',hz),d);
 % eex = fTransIsingGS(hz,eps);
@@ -92,24 +93,24 @@ plotvst = false;
 % ttl = '(b)';
 
 %%% S=1/2 Heisenberg Antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% N = 1;
-% sgn = 1;
-% d = 2;
-% % mv = [33,43,55,70,88,110,137,169,207,253];
-% % mv = [33,55,88,137];
-% % mv = 137;
-% mv = 20;
-% % mv = 1024;
-% H = GetTwoSiteH([sgn,sgn,-1,0,0],d); 
-% W = fSpinMPO(struct('Jx',sgn,'Jy',sgn,'Jz',-1),d);
-% eex = 0.25 - log(2);
-% [X,Y,Z] = su2gen(d);
-% obs = fMakeObs({'X','Y','Z'},{X,Y,Z});
-% if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-% else mstr = int2str(mv(end));
-% end
-% ttm = ['$S=1/2$ XXZ, $\Delta=1$, $D=',mstr,'$, $N=',int2str(N),'$'];
-% ttl = '(d)';
+N = 1;
+sgn = -1;
+d = 2;
+% mv = [33,43,55,70,88,110,137,169,207,253];
+% mv = [33,55,88,137];
+% mv = 137;
+mv = 66;
+% mv = 1024;
+H = GetTwoSiteH([sgn,sgn,-1,0,0],d); 
+W = fSpinMPO(struct('Jx',sgn,'Jy',sgn,'Jz',-1),d);
+eex = 0.25 - log(2);
+[X,Y,Z] = su2gen(d);
+obs = fMakeObs({'X','Y','Z'},{X,Y,Z});
+if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+else mstr = int2str(mv(end));
+end
+ttm = ['$S=1/2$ XXZ, $\Delta=1$, $D=',mstr,'$, $N=',int2str(N),'$'];
+ttl = '(d)';
 
 %%% S=1/2 anisotropic XXZ antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % N = 2;
@@ -135,28 +136,29 @@ plotvst = false;
 
 
 %%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N = 2;
-d = 4;
-t = 1;
-U = 10;
-V = 8;
-mu = [];
-% mv = 69;
-% mv = [10,15,20,25,30,35,40,45,50,55,60,65,69];
-% mv = 126;
-mv = [30,69];
-% mv = [30,65,126];
-% H = GetTwoSiteHamHUB(struct('t',1,'U',U));
-W = fHubMPO(struct('t',1,'U',U,'V',V,'mu',mu));
-% eex = fHUBGS_fixedmu(U,mu,1e-15);
-
-if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-else mstr = int2str(mv(end));
-end
-ttm = ['Hubbard, $U=',num2str(U),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-ttl = '(e)';
-% obs = fMakeObs({'nup','ndown'},{diag([0,0,1,1]),diag([0,1,0,1])});
-obs = fMakeObs({'n','Z'},{diag([0,1,1,2]),diag([0,-1,1,0])});
+% N = 2;
+% d = 4;
+% 
+% t = 1;
+% U = 10;
+% V = 8;
+% mu = [];
+% % mv = 69;
+% % mv = [10,15,20,25,30,35,40,45,50,55,60,65,69];
+% % mv = 126;
+% mv = 51;
+% % mv = [30,65,126];
+% % H = GetTwoSiteHamHUB(struct('t',1,'U',U));
+% W = fHubMPO(struct('t',1,'U',U,'V',V,'mu',mu));
+% % eex = fHUBGS_fixedmu(U,mu,1e-15);
+% 
+% if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+% else mstr = int2str(mv(end));
+% end
+% ttm = ['Hubbard, $U=',num2str(U),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+% ttl = '(e)';
+% % obs = fMakeObs({'nup','ndown'},{diag([0,0,1,1]),diag([0,1,0,1])});
+% obs = fMakeObs({'n','Z'},{diag([0,1,1,2]),diag([0,-1,1,0])});
 
 
 %%% Haldane-Shastry %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,15 +200,18 @@ obs = fMakeObs({'n','Z'},{diag([0,1,1,2]),diag([0,-1,1,0])});
 %%% XY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % N = 1;
 % d = 2;
-% mv = 33;
-% H = GetTwoSiteH([1,1,0,0,0],d);
-% W = fSpinMPO(struct('Jx',1,'Jy',1),d);
+% mv = 30;
+% hz = 1;
+% % H = GetTwoSiteH([1,1,0,0,0],d);
+% W = fSpinMPO(struct('Jx',1,'Jy',1,'hz',hz),d);
 % % eex = -1/pi;
 % if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
 % else mstr = int2str(mv(end));
 % end
-% ttm = ['$S=1/2$ XXZ, $\Delta=0$, $D=',mstr,'$, $N=',int2str(N),'$'];
+% ttm = ['$S=1/2$ XXZ, $\Delta=0$, $hz=',num2str(hz),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
 % ttl = '(g)';
+% [X,~,Z] = su2gen(d);
+% obs = fMakeObs({'X','Z'},{X,Z});
 
 %%% Bose Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % N = 1;
