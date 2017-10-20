@@ -21,7 +21,7 @@ function [W] = fHubMPO(params)
 % cup|2> =  |0>
 % cup|3> =  |1>
 % this results in the definitions below. 
-% The creators are just the transposes of the annihilators
+% The creators are just the hermitian transposes of the annihilators
 
 % to get real fermionic operators, the cup and cdown matrices are preceded
 % by a string of Jordan Wigner operators, which give phases +/- 1 depending
