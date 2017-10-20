@@ -7,19 +7,19 @@ clc;
 statefldr = 'states';
 datafldr = 'data';
 
-tol = 1e-10;
+tol = 1e-8;
 InvETol = 1e-12;
 verbose = 0;
 
-kv = linspace(0,1,21);
+kv = linspace(0,1,51);
 % kv = 0;
-nbands = 1;
+nbands = 8;
 
-% savee = true;
-savee = false;
+savee = true;
+% savee = false;
 
-% savex = true;
-savex = false;
+savex = true;
+% savex = false;
 
 % state = 'TFI_h1_m11_N3.mat';
 % topo = false;
@@ -39,11 +39,12 @@ savex = false;
 % SX = su2gen(2);
 % OP = {2*SX,2*SX};
 
-state = 'Hubbard_U10_V8_D30_69_N2.mat';
+state = 'Hubbard_U10_V8_D51_N2.mat';
 H = GetTwoSiteHamHUB(struct('t',1,'U',10,'V',8));
-topo = false;
 
-% OP = 1;
+% topo = false;
+topo = true;
+OP = 1;
 
 % state = 'XXZ_Delta-1_D50_N2.mat';
 % H = GetTwoSiteH([1,1,-1,0,0],2);
@@ -103,20 +104,21 @@ d = length(AL{1});
 
 
 % PBC index function (wraps around, s.t. FP(N+1) = 1 and FP(0) = N)
-FP = @(n)(mod(n+N-1,N)+1);
+PBC = @(n)(mod(n+N-1,N)+1);
 
 
 R = C{end}*C{end}';
 
 if topo % topo nontrivial
     if isscalar(OP)
-        AR = circshift(AR,[OP,0]);
+        AR = circshift(AR,[0,OP]);
+        L = C{PBC(OP)}'*C{PBC(OP)};
     else
         for nn=1:N
             AR{nn} = ApplyOperator(AR{nn},OP{nn});
         end
+        L = C{end}'*C{end};
     end
-    L = C{end}'*C{end};
 %     AR = [AR(end),AR(1:end-1)];
 %     L = C{end-1}'*C{end-1};
     disp('overlap between AL and AR:');
@@ -151,11 +153,11 @@ for nn=1:N
     dim = dim + (d-1)*numel(AL{nn}{1});
     NL{nn} = GetNullSpace(AL{nn},'l');
     
-    AALtmp = concatMPS(AL{FP(nn-1)},AL{nn});
+    AALtmp = concatMPS(AL{PBC(nn-1)},AL{nn});
     E0L = E0L + trace(ApplyOpTM(AALtmp,AALtmp,[],H,'l')*C{nn}*C{nn}')/N;
     
-    AARtmp = concatMPS(AR{FP(nn-1)},AR{nn});
-    E0R = E0R + trace(C{FP(nn-2)}'*C{FP(nn-2)}*ApplyOpTM(AARtmp,AARtmp,[],H,'r'))/N;
+    AARtmp = concatMPS(AR{PBC(nn-1)},AR{nn});
+    E0R = E0R + trace(C{PBC(nn-2)}'*C{PBC(nn-2)}*ApplyOpTM(AARtmp,AARtmp,[],H,'r'))/N;
     
 %     errtmp = 0;
 %     for ll=1:d, errtmp = errtmp + AL{nn}{ll}*C{nn} - C{FP(nn-1)}*AR{nn}{ll};end
