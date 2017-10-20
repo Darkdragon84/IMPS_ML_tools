@@ -164,12 +164,7 @@ while run_VUMPS
     end
     lamold = lam;
     
-%     if dosvd && prec < SVDthresh
-%         dosvd = false;
-% %         disp('switching');
-% %         pause;
-%     end
-    dosvd = false; % it turns out that this is at least as stable as the usual SVD, but not susceptice to small Schmidt values
+    dosvd = false; % it turns out that this is at least as stable as the usual SVD, but not susceptive to small Schmidt values
     
     if dosvd
         [UL,~,VL] = svd(cell2mat(AC)*C','econ');
@@ -178,14 +173,6 @@ while run_VUMPS
         [UR,~,VR] = svd(C'*cell2mat(AC.'),'econ'); %% AC.' just reshapes the [2,1] cell into a [1,2] one
         AR = mat2cell(UR*VR',m,m*ones(1,d));
     else
-%                 [QAL,~] = qrpos(cell2mat(AC));
-%                 [QCL,~] = qrpos(C);
-%                 AL = mat2cell(QAL*QCL',m*ones(d,1),m);
-%         
-%                 [QAR,~] = qrpos(cell2mat(AC.')');
-%                 [QCR,~] = qrpos(C');
-%                 AR = mat2cell(QCR*QAR',m,m*ones(1,d));
-
         % Matt's alternative scheme (polar decompositions)
         [UAL,~,VAL] = svd(cell2mat(AC),'econ');
         [UAR,~,VAR] = svd(cell2mat(AC.'),'econ');
