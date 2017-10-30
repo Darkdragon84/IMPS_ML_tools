@@ -285,7 +285,7 @@ while run_vumps
         
         if trueLR
             R = fMPSTMeig(AL,'r',0,C{end}*C{end}',[],'lr');
-            warning('true R for XL');
+%             warning('true R for XL');
         else R = C{end}*C{end}';
         end
         
@@ -317,7 +317,7 @@ while run_vumps
         
         if trueLR
             L = fMPSTMeig(AR,'l',0,C{1}'*C{1},[],'lr');
-            warning('true L for XR');
+%             warning('true L for XR');
         else L = C{1}'*C{1};
         end
         
@@ -352,7 +352,7 @@ while run_vumps
     
     % in order to get truly variational energies, calculate exact left dominant TM eigenvector    
     if truevarE && ~trueLR
-        warning('true L for E');
+%         warning('true L for E');
         L = fMPSTMeig(AR,'l',0,L,[],'lr');
     end
     E = EdensMPO(AR,WN{2},XR,L,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
