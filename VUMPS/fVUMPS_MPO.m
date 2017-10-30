@@ -25,6 +25,7 @@ nxi = params.nxi;
 calcxi = nxi>0;
 plotxi = params.plotxi;
 trueLR = params.trueLR;
+truevarE = params.truevarE;
 
 thresh=params.thresh;
 expthresh=params.expthresh;
@@ -259,8 +260,13 @@ while run_VUMPS
     
     tv = [tv;ttot];
     
-    Rex = fMPSTMeig(AL,'r',0,R,2*eps,'lr');
-    E = EdensMPO(AL,W,XL,Rex,'l');
+    
+    
+    if truevarE && ~trueLR
+%         warning('true L for E');
+        R = fMPSTMeig(AL,'r',0,R,[],'lr');
+    end
+    E = EdensMPO(AL,W,XL,R,'l');
     dE = E - Eold;
     Eold = E;
     Ev = [Ev;E];
