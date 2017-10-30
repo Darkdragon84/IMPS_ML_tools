@@ -11,15 +11,15 @@ tol = 1e-8;
 InvETol = 1e-12;
 verbose = 0;
 
-kv = linspace(0,1,51);
+nk = 21;
 % kv = 0;
-nbands = 8;
+nbands = 4;
 
-savee = true;
-% savee = false;
+% savee = true;
+savee = false;
 
-savex = true;
-% savex = false;
+% savex = true;
+savex = false;
 
 % state = 'TFI_h1_m11_N3.mat';
 % topo = false;
@@ -30,21 +30,29 @@ savex = true;
 % [SX,~,SZ] = su2gen(2);
 % OP = {2*SZ,2*SZ};
 
-% state = 'XXZ_D-4_m33_N2.mat';
-% % state = 'XXZ_D-3_m50_N2.mat';
-% % 
+state = 'S12XXZ_Delta0.5_D55_N3.mat';
+% H = GetTwoSiteH([1,1,-0.5,0,0.82916108],2);
+H = GetTwoSiteH([1,1,-0.5,0,0],2);
+% topo = false;
+topo = true;
+OP = 1;
+
+% state = 'S12XXZ_Delta4_D33_N2.mat';
 % H = GetTwoSiteH([1,1,-4,0,0],2);
 % % topo = false;
+% topo = true;
+% OP = 1;
+
 % topo = true;
 % SX = su2gen(2);
 % OP = {2*SX,2*SX};
 
-state = 'Hubbard_U10_V8_D51_N2.mat';
-H = GetTwoSiteHamHUB(struct('t',1,'U',10,'V',8));
+% state = 'Hubbard_U10_V8_D51_N2.mat';
+% H = GetTwoSiteHamHUB(struct('t',1,'U',10,'V',8));
 
 % topo = false;
-topo = true;
-OP = 1;
+% topo = true;
+% OP = 1;
 
 % state = 'XXZ_Delta-1_D50_N2.mat';
 % H = GetTwoSiteH([1,1,-1,0,0],2);
@@ -55,6 +63,7 @@ OP = 1;
 % % state = 'HUB_U5_mu-2_m50_N2.mat';
 % H = GetTwoSiteHamHUB(struct('t',1,'U',5));
 % topo = true;
+% OP = 1;
 
 % %%% spin flip
 % % FS = [1,0,0,0;0,0,1,0;0,1,0,0;0,0,0,-1];
@@ -102,28 +111,30 @@ if any(errs>tol),warning('ground state gauge is worse than tol');end
 N = length(AL);
 d = length(AL{1});
 
+kv = linspace(0,2,nk)/N;
 
 % PBC index function (wraps around, s.t. FP(N+1) = 1 and FP(0) = N)
 PBC = @(n)(mod(n+N-1,N)+1);
 
-
-R = C{end}*C{end}';
+% R = C{end}*C{end}';
+R = cellfun(@(x) x*x',C,'uniformoutput',false);
+L = cellfun(@(x) x'*x,C,'uniformoutput',false);
 
 if topo % topo nontrivial
     if isscalar(OP)
         AR = circshift(AR,[0,OP]);
-        L = C{PBC(OP)}'*C{PBC(OP)};
+        L = circshift(L,[0,OP]);
+%         L = C{PBC(OP)}'*C{PBC(OP)};
     else
         for nn=1:N
             AR{nn} = ApplyOperator(AR{nn},OP{nn});
         end
-        L = C{end}'*C{end};
+%         L = C{end}'*C{end};
     end
-%     AR = [AR(end),AR(1:end-1)];
-%     L = C{end-1}'*C{end-1};
+    
     disp('overlap between AL and AR:');
-    [LMv,OLLv] = fMPSMixedTMeig(AL,AR,'l',1,[],[],'lm',4);
-    [RMv,OLRv] = fMPSMixedTMeig(AL,AR,'r',1,[],[],'lm',4);
+    [LMv,OLLv] = fMPSMixedTMeig(AL,AR,'l',1,[],eps,'lm',4);
+    [RMv,OLRv] = fMPSMixedTMeig(AL,AR,'r',1,[],eps,'lm',4);
     OLL = OLLv(1);
     LM = LMv{1};
     OLR = OLRv(1);
@@ -137,7 +148,7 @@ if topo % topo nontrivial
         AR{1}{kk} = fac*AR{1}{kk};
     end
 else % topo trivial
-    L = C{end}'*C{end};
+%     L = C{end}'*C{end};
     LM = C{end}';
     RM = C{end};
 end
@@ -154,19 +165,13 @@ for nn=1:N
     NL{nn} = GetNullSpace(AL{nn},'l');
     
     AALtmp = concatMPS(AL{PBC(nn-1)},AL{nn});
-    E0L = E0L + trace(ApplyOpTM(AALtmp,AALtmp,[],H,'l')*C{nn}*C{nn}')/N;
+%     E0L = E0L + trace(ApplyOpTM(AALtmp,AALtmp,[],H,'l')*C{nn}*C{nn}')/N;
+    E0L = E0L + trace(ApplyOpTM(AALtmp,AALtmp,[],H,'l')*R{nn})/N;
     
     AARtmp = concatMPS(AR{PBC(nn-1)},AR{nn});
-    E0R = E0R + trace(C{PBC(nn-2)}'*C{PBC(nn-2)}*ApplyOpTM(AARtmp,AARtmp,[],H,'r'))/N;
+%     E0R = E0R + trace(C{PBC(nn-2)}'*C{PBC(nn-2)}*ApplyOpTM(AARtmp,AARtmp,[],H,'r'))/N;
+    E0R = E0R + trace(L{PBC(nn-2)}*ApplyOpTM(AARtmp,AARtmp,[],H,'r'))/N;
     
-%     errtmp = 0;
-%     for ll=1:d, errtmp = errtmp + AL{nn}{ll}*C{nn} - C{FP(nn-1)}*AR{nn}{ll};end
-%     disp(['err(',int2str(nn),')=',num2str(max(max(abs(errtmp))))]);
-    
-%     if ~topo
-%         AR{nn}={AR{nn}{1},-AR{nn}{2}};
-%         AR{nn}={AR{nn}{2},AR{nn}{1}};
-%     end
 end
 disp(['E0L=',num2str(E0L,'%2.8e')]);
 disp(['E0R=',num2str(E0R,'%2.8e')]);
@@ -185,10 +190,10 @@ HP = struct('I',I,'J',J,'Iv',Iv,'Jv',Jv,'V',HV);
 % HP = {I,J,Iv,Jv,HV};
 
 
-disp(['check R: ',num2str(norm(ApplyTransOp(AL,AL,R,'r')-R,'fro'),'%2.8e')]);
-disp(['check L: ',num2str(norm(ApplyTransOp(AR,AR,L,'l')-L,'fro'),'%2.8e')]);
+disp(['check R: ',num2str(norm(ApplyTransOp(AL,AL,R{end},'r')-R{end},'fro'),'%2.8e')]);
+disp(['check L: ',num2str(norm(ApplyTransOp(AR,AR,L{end},'l')-L{end},'fro'),'%2.8e')]);
 % [HLtot,HRtot] = fHeffConstants(AL,AR,L,R,H,max(tol/100,1e-14),[],true);
-[HLtot,HRtot] = fOpEffMultiConstants(AL,AR,L,R,H,2,max(tol/100,1e-14),[],true);
+[HLtot,HRtot] = fOpEffMultiConstants(AL,AR,L{end},R{end},H,2,max(tol/100,1e-14),[],true);
 
 Hs.H = H;
 Hs.HP = HP;
@@ -203,7 +208,6 @@ opts.tol = tol;
 opts.v0 = randn(dim,1);
 opts.disp = verbose;
 
-nk = numel(kv);
 dE = nan(nbands,nk);
 
 if savee || savex
@@ -234,6 +238,7 @@ end
 parfor nn=1:nk
 % for nn=1:nk
     kfac = exp(1i*N*kv(nn)*pi);
+%     kfac = exp(1i*kv(nn)*pi);
     
 %     Hfun = @(x) fApplyHeffVec(x,kfac,AL,AR,C,NL,Hs,~topo,tol);
     Hfun = @(x) fApplyHeffMultiVec(x,kfac,AL,AR,LM,RM,NL,Hs,true,tol);
