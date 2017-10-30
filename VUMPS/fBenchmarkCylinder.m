@@ -20,26 +20,26 @@ lamthresh = 1e-10;
 % singlecomp = true;
 singlecomp = false;
 
-% chkp = true;
-chkp = false;
+chkp = true;
+% chkp = false;
 
-% savestats = true;
-savestats = false;
+savestats = true;
+% savestats = false;
 
 % savelamevo = true;
 savelamevo = false;
 
-% saveobsevo = true;
- saveobsevo = false;
+saveobsevo = true;
+% saveobsevo = false;
 
 % save_plots = true;
 save_plots = false;
 
-plotlam = true;
-% plotlam = false;
+% plotlam = true;
+plotlam = false;
 
-plotnorm = true;
-% plotnorm = false;
+% plotnorm = true;
+plotnorm = false;
 
 % plotdlam = true;
 plotdlam = false;
@@ -47,8 +47,8 @@ plotdlam = false;
 % plotxi = true;
 plotxi = false;
 
-plotex = true;
-% plotex = false;
+% plotex = true;
+plotex = false;
 
 % plotvst = true;
 plotvst = false;
@@ -146,7 +146,7 @@ end
 params = struct('thresh',thresh,'expthresh',expthresh,...
                 'InvEthresh',InvEthresh,'lamthresh',lamthresh,'Eigsthresh',tol0,...
                 'plotlam',plotlam,'plotvst',plotvst,'plotex',plotex,'plotnorm',plotnorm,'plotdlam',plotdlam,'plotxi',plotxi,...
-                'mv',{mv},'singlecomp',singlecomp,'trueLR',true,...
+                'mv',{mv},'singlecomp',singlecomp,'trueLR',false,'truevarE',true,...
                 'checkpoint',chkp,'chkpfldr',chkpfldr,'chkpstr',name,...
                 'savestats',savestats,'datafldr',datafldr,'statstr',name,...
                 'savelamevo',savelamevo,'saveobsevo',saveobsevo);
