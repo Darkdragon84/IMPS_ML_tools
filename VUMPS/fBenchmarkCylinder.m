@@ -20,26 +20,26 @@ lamthresh = 1e-10;
 % singlecomp = true;
 singlecomp = false;
 
-chkp = true;
-% chkp = false;
+% chkp = true;
+chkp = false;
 
-savestats = true;
-% savestats = false;
+% savestats = true;
+savestats = false;
 
 % savelamevo = true;
 savelamevo = false;
 
-saveobsevo = true;
-%  saveobsevo = false;
+% saveobsevo = true;
+ saveobsevo = false;
 
 % save_plots = true;
 save_plots = false;
 
-% plotlam = true;
-plotlam = false;
+plotlam = true;
+% plotlam = false;
 
-% plotnorm = true;
-plotnorm = false;
+plotnorm = true;
+% plotnorm = false;
 
 % plotdlam = true;
 plotdlam = false;
@@ -47,8 +47,8 @@ plotdlam = false;
 % plotxi = true;
 plotxi = false;
 
-% plotex = true;
-plotex = false;
+plotex = true;
+% plotex = false;
 
 % plotvst = true;
 plotvst = false;
