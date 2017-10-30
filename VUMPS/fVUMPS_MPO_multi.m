@@ -16,10 +16,10 @@ PBC = @(n)(mod(n+N-1,N)+1);
 
 %% initialize parameters
 params = fVUMPS_params(paramsin);
-verbose=params.verbose;
+verbose = params.verbose;
 
 tolmax = params.tolmax;
-tolmin=params.eigsthresh;
+tolmin = params.eigsthresh;
 mv = params.mv;
 Nm = params.Nm;
 
@@ -34,6 +34,7 @@ nxi = params.nxi;
 calcxi = nxi>0;
 plotxi = params.plotxi;
 trueLR = params.trueLR;
+truevarE = params.truevarE;
 
 thresh = params.thresh;
 expthresh = params.expthresh;
@@ -282,7 +283,9 @@ while run_vumps
         prec(nn) = errs(nn,3);
         tol(nn) = min(max(prec(nn)/100,tolmin),tolmax);
         
-        if trueLR, R = fMPSTMeig(AL,'r',0,C{end}*C{end}',[],'lr');
+        if trueLR
+            R = fMPSTMeig(AL,'r',0,C{end}*C{end}',[],'lr');
+            warning('true R for XL');
         else R = C{end}*C{end}';
         end
         
@@ -312,7 +315,9 @@ while run_vumps
         XL1 = ApplyMPOTM(AL{1},AL{1},W{1},XLtrans,'l');
         tstep = tstep + toc;
         
-        if trueLR, L = fMPSTMeig(AR,'l',0,C{1}'*C{1},[],'lr');
+        if trueLR
+            L = fMPSTMeig(AR,'l',0,C{1}'*C{1},[],'lr');
+            warning('true L for XR');
         else L = C{1}'*C{1};
         end
         
@@ -346,8 +351,10 @@ while run_vumps
     tv = [tv;ttot];
     
     % in order to get truly variational energies, calculate exact left dominant TM eigenvector
-%     Lex = fMPSTMeig(AR,'l',0,C{1}'*C{1});
-%     E = EdensMPO(AR,WN{2},XR,Lex,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
+    if truevarE && ~trueLR
+        warning('true L for E');
+        L = fMPSTMeig(AR,'l',0,L,[],'lr');
+    end
     E = EdensMPO(AR,WN{2},XR,L,'r')/N; % this is a translation over an entire unit cell and measures the energy of one unit cell
     dE = E - Eold;
     Eold = E;

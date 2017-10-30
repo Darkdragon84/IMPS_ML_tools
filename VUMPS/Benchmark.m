@@ -12,9 +12,9 @@ cmplx = false;
 thresh = 1e-14;
 tol0 = eps;
 SVDthresh = 5e-7;
-InvEthresh = 1e-14;
+InvEthresh = 1e-15;
 expthresh = 1e-8;
-lamthresh = 1e-10;
+lamthresh = 1e-12;
 
 % singlecomp = true;
 singlecomp = false;
@@ -93,46 +93,48 @@ plotvst = false;
 % ttl = '(b)';
 
 %%% S=1/2 Heisenberg Antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N = 1;
-sgn = -1;
-d = 2;
-% mv = [33,43,55,70,88,110,137,169,207,253];
-% mv = [33,55,88,137];
-% mv = 137;
-mv = 66;
-% mv = 1024;
-H = GetTwoSiteH([sgn,sgn,-1,0,0],d); 
-W = fSpinMPO(struct('Jx',sgn,'Jy',sgn,'Jz',-1),d);
-eex = 0.25 - log(2);
-[X,Y,Z] = su2gen(d);
-obs = fMakeObs({'X','Y','Z'},{X,Y,Z});
-if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
-else mstr = int2str(mv(end));
-end
-ttm = ['$S=1/2$ XXZ, $\Delta=1$, $D=',mstr,'$, $N=',int2str(N),'$'];
-ttl = '(d)';
-
-%%% S=1/2 anisotropic XXZ antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% N = 2;
+% N = 1;
+% sgn = -1;
 % d = 2;
-% sgn = 1;
-% % mv = 200;
-% % mv = [33,55,88,137,169,253];
-% % mv = 253;
-% % mv = [54,87,136];
-% mv = 33;
-% Delta = -2;
-% H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
-% W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta),d);
-% % W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
-% eex = fXXZGS_fixedh(Delta,0,1e-15);
+% % mv = [33,43,55,70,88,110,137,169,207,253];
+% % mv = [33,55,88,137];
+% % mv = 137;
+% mv = 66;
+% % mv = 1024;
+% H = GetTwoSiteH([sgn,sgn,-1,0,0],d); 
+% W = fSpinMPO(struct('Jx',sgn,'Jy',sgn,'Jz',-1),d);
+% eex = 0.25 - log(2);
+% [X,Y,Z] = su2gen(d);
+% obs = fMakeObs({'X','Y','Z'},{X,Y,Z});
 % if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
 % else mstr = int2str(mv(end));
 % end
-% ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
-% ttl = '(a)';
-% [X,~,Z] = su2gen(d);
-% obs = fMakeObs({'X','Z'},{X,Z});
+% ttm = ['$S=1/2$ XXZ, $\Delta=1$, $D=',mstr,'$, $N=',int2str(N),'$'];
+% ttl = '(d)';
+
+%%% S=1/2 anisotropic XXZ antiferromagnet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+N = 2;
+d = 2;
+sgn = 1;
+h = 0;
+% h = 0.82916108;
+% mv = 200;
+% mv = [33,55,88,137,169,253];
+% mv = 253;
+% mv = [54,87,136];
+mv = 253;
+Delta = -1.2;
+% H = GetTwoSiteH([sgn,1,sgn*Delta,0,0],d); 
+W = fSpinMPO(struct('Jx',sgn,'Jy',1,'Jz',sgn*Delta,'hz',h),d);
+% W = fSpinMPO(struct('Jx',1,'Jy',-1,'Jz',-Delta),d);
+eex = fXXZGS_fixedh(Delta,h,1e-15);
+if length(mv)>1,mstr = [int2str(mv(1)),',',int2str(mv(end))];
+else mstr = int2str(mv(end));
+end
+ttm = ['$S=1/2$ XXZ, $\Delta=',num2str(-Delta),'$, $D=',mstr,'$, $N=',int2str(N),'$'];
+ttl = '(a)';
+[X,~,Z] = su2gen(d);
+obs = fMakeObs({'X','Z'},{X,Z});
 
 
 %%% Fermi Hubbard %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
