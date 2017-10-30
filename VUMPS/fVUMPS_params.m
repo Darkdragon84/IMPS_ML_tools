@@ -23,6 +23,7 @@ if paramout.N>1
 end
 
 paramout = set_default(paramout,'trueLR',false); % calculate true L,R or use C'*C, C*C'
+paramout = set_default(paramout,'truevarE',false); % calculate true variational energy, or use approximate L, R
 paramout = set_default(paramout,'verbose',true);
 paramout = set_default(paramout,'singlecomp',false);
 
